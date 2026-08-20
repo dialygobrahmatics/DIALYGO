@@ -144,7 +144,7 @@ export default function ReportTab({ patient, insight }) {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <label className="block">
                   <span className="overline">Reviewing clinician</span>
-                  <Input data-testid="signoff-clinician-input" className="mt-1.5" value={signOff.clinician} onChange={(e) => updateDraft(patient, "signOff", { clinician: e.target.value })} placeholder="Dr. N. Bhatt" />
+                  <Input data-testid="signoff-clinician-input" className="mt-1.5" value={signOff.clinician} onChange={(e) => updateDraft(patient, "signOff", { clinician: e.target.value })} placeholder="Dr. Girish Reddy" />
                 </label>
                 <label className="block">
                   <span className="overline">Designation</span>

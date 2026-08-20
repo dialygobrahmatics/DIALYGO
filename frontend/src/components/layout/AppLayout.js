@@ -61,7 +61,7 @@ const SidebarLinks = ({ role, onNavigate, collapsed }) => (
 );
 
 export default function AppLayout({ children }) {
-  const { user, role, logout, switchRole, selectedPatientId, setSelectedPatientId } = useApp();
+  const { user, role, logout, switchRole, selectedPatientId, setSelectedPatientId, customPatients } = useApp();
   const navigate = useNavigate();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
@@ -70,7 +70,35 @@ export default function AppLayout({ children }) {
   const [searchOpen, setSearchOpen] = useState(false);
 
   const crumb = pageTitles[location.pathname] || ["DialyGo", "Overview"];
-  const results = q ? patients.filter((p) => `${p.name} ${p.id} ${p.uhid}`.toLowerCase().includes(q.toLowerCase())) : [];
+  const allPatients = [...patients, ...customPatients];
+  const results = q ? allPatients.filter((p) => `${p.name} ${p.id} ${p.uhid}`.toLowerCase().includes(q.toLowerCase())) : [];
+
+  // Functional breadcrumb for the Patients flow only; other pages keep their existing static crumb.
+  const patientFlow = {
+    doctor: { list: "/doctor/patients", main: "/doctor/patient-360", subs: ["/doctor/clinical-history", "/doctor/dialysis-history", "/doctor/vascular", "/doctor/core-analysis", "/doctor/reports", "/doctor/clinical-review"] },
+    operator: { list: "/operator/search", main: "/operator/pre-session", subs: ["/operator/current-session", "/operator/history", "/operator/vascular", "/operator/machine-insights", "/operator/procedure-support", "/operator/reports"] },
+  }[role];
+
+  const activePatient = allPatients.find((p) => p.id === selectedPatientId);
+  const homeTo = ROLES[role]?.home || "/";
+  const path = location.pathname;
+
+  let crumbs = [{ label: crumb[0] }, { label: crumb[1] }];
+  if (patientFlow) {
+    if (path === patientFlow.list) {
+      crumbs = [{ label: "Home", to: homeTo }, { label: "Patients" }];
+    } else if (path === patientFlow.main && activePatient) {
+      crumbs = [{ label: "Home", to: homeTo }, { label: "Patients", to: patientFlow.list }, { label: activePatient.name }];
+    } else if (patientFlow.subs.includes(path) && activePatient) {
+      crumbs = [
+        { label: "Home", to: homeTo },
+        { label: "Patients", to: patientFlow.list },
+        { label: activePatient.name, to: patientFlow.main },
+        { label: crumb[1] },
+      ];
+    }
+  }
+  const currentTitle = crumbs[crumbs.length - 1].label;
 
   const onSwitchRole = (r) => navigate(switchRole(r));
 
@@ -140,8 +168,19 @@ export default function AppLayout({ children }) {
             </Link>
 
             <div className="min-w-0 hidden sm:block">
-              <p className="overline" data-testid="breadcrumb">{crumb[0]} / {crumb[1]}</p>
-              <h2 className="font-head font-bold leading-none truncate">{crumb[1]}</h2>
+              <p className="overline flex items-center gap-1" data-testid="breadcrumb">
+                {crumbs.map((c, i) => (
+                  <span key={i} className="flex items-center gap-1">
+                    {c.to ? (
+                      <Link to={c.to} data-testid={`breadcrumb-link-${i}`} className="hover:text-navy transition-colors">{c.label}</Link>
+                    ) : (
+                      <span>{c.label}</span>
+                    )}
+                    {i < crumbs.length - 1 && <span className="text-slate-300">/</span>}
+                  </span>
+                ))}
+              </p>
+              <h2 className="font-head font-bold leading-none truncate">{currentTitle}</h2>
             </div>
 
             <div className="flex-1" />
@@ -245,7 +284,7 @@ export default function AppLayout({ children }) {
             <span className="text-xs font-semibold dg-chip-navy rounded-full px-2.5 py-0.5">Prototype Analysis · Decision Support Only</span>
             {role !== "patient" && role !== "techadmin" && role !== "dialysisadmin" && (
               <span className="text-xs text-slate-600" data-testid="active-patient-chip">
-                Active patient: <span className="font-semibold">{patients.find((p) => p.id === selectedPatientId)?.name}</span>
+                Active patient: <span className="font-semibold">{allPatients.find((p) => p.id === selectedPatientId)?.name}</span>
               </span>
             )}
           </div>

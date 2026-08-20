@@ -1,7 +1,29 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { operators } from "@/data/mockData";
+import { operators, patients } from "@/data/mockData";
 
 const AppContext = createContext(null);
+
+// Builds a display-ready patient record from the operator's manual entry form (mock only).
+const buildCustomPatient = (form) => {
+  const tpl = patients[1];
+  return {
+    ...tpl,
+    isCustom: true,
+    id: form.uhid ? `DUR-PT-${String(form.uhid).slice(-5)}` : `DUR-PT-N${Date.now().toString().slice(-5)}`,
+    uhid: form.uhid || tpl.uhid,
+    name: form.name,
+    age: Number(form.age) || tpl.age,
+    gender: form.gender || tpl.gender,
+    primaryDiagnosis: form.diagnosis || tpl.primaryDiagnosis,
+    nextSessionNo: form.nextSession || tpl.nextSessionNo,
+    schedule: form.schedule || tpl.schedule,
+    vascular: {
+      ...tpl.vascular,
+      type: form.accessType || tpl.vascular.type,
+      lastFlowMlMin: Number(form.accessFlow) || tpl.vascular.lastFlowMlMin,
+    },
+  };
+};
 
 const emptyDraft = (patient) => ({
   stage: "before",
@@ -58,7 +80,7 @@ export const ROLES = {
 
 const demoUsers = {
   operator: { id: "OPR-1041", name: "S. Kulkarni", role: "operator", title: "Senior Dialysis Technician", unit: "Nephro Unit B" },
-  doctor: { id: "DOC-0071", name: "Dr. N. Bhatt", role: "doctor", title: "Consultant Nephrologist", unit: "Nephrology" },
+  doctor: { id: "DOC-0071", name: "Dr. Girish Reddy", role: "doctor", title: "Consultant Nephrologist", unit: "Nephrology" },
   patient: { id: "DUR-PT-00218", name: "Ramesh Iyer", role: "patient", title: "Patient", unit: "Maintenance haemodialysis" },
   dialysisadmin: { id: "ADM-0002", name: "Dr. K. Sharma", role: "dialysisadmin", title: "Dialysis Unit Administrator", unit: "Dialysis Services" },
   techadmin: { id: "ADM-0001", name: "P. Raghavan", role: "techadmin", title: "Technical Administrator", unit: "DialyGo Platform Operations" },
@@ -74,6 +96,16 @@ export function AppProvider({ children }) {
   const [selectedPatientId, setSelectedPatientId] = useState("DUR-PT-00218");
   const [uploads, setUploads] = useState([]);
   const [engineRuns, setEngineRuns] = useState({});
+  const [customPatients, setCustomPatients] = useState([]);
+  const [reportRuns, setReportRuns] = useState({});
+
+  const setReportRun = (patientId, state) => setReportRuns((prev) => ({ ...prev, [patientId]: state }));
+
+  const addCustomPatient = (form) => {
+    const p = buildCustomPatient(form);
+    setCustomPatients((prev) => [...prev, p]);
+    return p;
+  };
 
   useEffect(() => {
     if (operator) localStorage.setItem("dialygo_user", JSON.stringify(operator));
@@ -142,9 +174,13 @@ export function AppProvider({ children }) {
       addUpload,
       engineRuns,
       recordEngineRun,
+      customPatients,
+      addCustomPatient,
+      reportRuns,
+      setReportRun,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [operator, drafts, whatsappLog, selectedPatientId, uploads, engineRuns]
+    [operator, drafts, whatsappLog, selectedPatientId, uploads, engineRuns, customPatients, reportRuns]
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

@@ -6,8 +6,8 @@ import { buildInsight, levelColor } from "@/lib/engine";
 import { EmptyState } from "@/components/Bits";
 
 export const usePatientContext = () => {
-  const { selectedPatientId, getDraft } = useApp();
-  const patient = getPatient(selectedPatientId);
+  const { selectedPatientId, getDraft, customPatients } = useApp();
+  const patient = customPatients.find((p) => p.id === selectedPatientId) || getPatient(selectedPatientId);
   const draft = patient ? getDraft(patient) : null;
   const insight = patient ? buildInsight(patient, draft) : null;
   return { patient, draft, insight };
@@ -74,16 +74,17 @@ export const PatientBanner = ({ patient, insight, compact = false }) => {
   );
 };
 
-export const PatientPickerList = ({ onPick, testId = "patient-list" }) => {
-  const { selectedPatientId } = useApp();
+export const PatientPickerList = ({ onPick, testId = "patient-list", renderExtra }) => {
+  const { selectedPatientId, customPatients } = useApp();
+  const allPatients = [...patients, ...customPatients];
   return (
     <div className="grid grid-cols-1 xl:grid-cols-2 gap-4" data-testid={testId}>
-      {patients.map((p) => {
+      {allPatients.map((p) => {
         const ins = buildInsight(p, null);
         const highs = ins.attention.filter((a) => a.severity === "high");
         return (
+          <div key={p.id} className="flex flex-col gap-3">
           <button
-            key={p.id}
             data-testid={`patient-card-${p.id}`}
             onClick={() => onPick(p.id)}
             className={`text-left bg-white border rounded-md shadow-sm hover:shadow-md transition-colors p-5 ${
@@ -115,6 +116,8 @@ export const PatientPickerList = ({ onPick, testId = "patient-list" }) => {
               </p>
             )}
           </button>
+          {renderExtra ? renderExtra(p) : null}
+          </div>
         );
       })}
     </div>

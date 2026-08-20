@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, CalendarClock, ClipboardCheck, Gauge, ListChecks, ShieldCheck, AlertTriangle, Activity } from "lucide-react";
-import { Panel, Metric, TrendBadge, ContextLine } from "@/components/Bits";
+import { ArrowRight, CalendarClock, ClipboardCheck, Gauge, ListChecks, ShieldCheck, AlertTriangle, Activity, Upload, Loader2 } from "lucide-react";
+import { Panel, Metric, TrendBadge, ContextLine, Field } from "@/components/Bits";
 import { PatientBanner, PatientPickerList, NoPatient, usePatientContext } from "@/components/PatientBanner";
 import CoreEngineRunner from "@/components/CoreEngineRunner";
 import OverviewTab from "@/components/tabs/OverviewTab";
@@ -14,6 +14,8 @@ import { buildInsight, levelColor, contextFor } from "@/lib/engine";
 import { machineFleet } from "@/data/adminData";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useState } from "react";
 
 const workflow = [
@@ -53,9 +55,69 @@ export const WorkflowStrip = ({ active }) => (
 
 export function OperatorHome() {
   const navigate = useNavigate();
-  const { setSelectedPatientId } = useApp();
+  const { setSelectedPatientId, addCustomPatient, customPatients, reportRuns, setReportRun } = useApp();
   const rows = patients.map((p) => ({ p, insight: buildInsight(p, null) }));
   const highTotal = rows.filter((r) => r.insight.attention.some((a) => a.severity === "high")).length;
+
+  const [uploadedName, setUploadedName] = useState("");
+  const [formOpen, setFormOpen] = useState(false);
+  const [form, setForm] = useState({ name: "", age: "", gender: "Male", uhid: "", diagnosis: "", accessType: "AV Fistula", accessFlow: "", nextSession: "", schedule: "" });
+
+  const onFileSelect = (e) => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    setUploadedName(f.name);
+    setFormOpen(true);
+    e.target.value = "";
+  };
+
+  const submitForm = () => {
+    addCustomPatient(form);
+    setFormOpen(false);
+    setForm({ name: "", age: "", gender: "Male", uhid: "", diagnosis: "", accessType: "AV Fistula", accessFlow: "", nextSession: "", schedule: "" });
+  };
+
+  const runReport = (id) => {
+    setReportRun(id, "processing");
+    setTimeout(() => setReportRun(id, "complete"), 2500);
+  };
+
+  const renderExtra = (p) => {
+    if (!p.isCustom) return null;
+    const state = reportRuns[p.id] || "idle";
+    return (
+      <div data-testid={`new-patient-extra-${p.id}`}>
+        {state !== "complete" ? (
+          <Button
+            data-testid={`run-report-btn-${p.id}`}
+            disabled={state === "processing"}
+            onClick={() => runReport(p.id)}
+            className="bg-saffron hover:bg-saffron-warm text-white font-bold"
+          >
+            {state === "processing" ? <><Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> Analyzing...</> : "Run Report"}
+          </Button>
+        ) : (
+          <Panel title="Prescription Report — Prototype Analysis" hint="Decision Support Only · Requires Qualified Clinical Review" testId={`generated-report-${p.id}`}>
+            <p className="overline">Summary</p>
+            <p className="text-sm text-slate-700 mt-1.5">
+              Consolidated review of the available dialysis, vascular-access and laboratory evidence indicates a session
+              profile consistent with the patient's recent baseline. Reviewed by Dr. Girish Reddy.
+            </p>
+            <p className="overline mt-5">Risk flag</p>
+            <div className={`rounded-xl border p-3 mt-1.5 ${levelColor("moderate")}`}>
+              <p className="text-sm font-bold">Access dysfunction risk — moderate</p>
+              <p className="text-xs mt-1 opacity-90">Illustrative flag derived from recorded access history and cannulation entries.</p>
+            </div>
+            <p className="overline mt-5">Recommendation</p>
+            <p className="text-sm text-slate-700 mt-1.5">
+              Continue the prescribed parameters for this session and repeat access-flow surveillance at the next review,
+              subject to clinician sign-off before any change is applied at the machine.
+            </p>
+          </Panel>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-4">
@@ -74,10 +136,57 @@ export function OperatorHome() {
         </div>
       </div>
 
+      <Panel title="Upload patient record" hint="Any file type. The file is not read or processed — it opens the manual entry form." testId="upload-record-panel">
+        <div className="flex flex-wrap items-center gap-3">
+          <label className="inline-flex items-center gap-2 cursor-pointer">
+            <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-navy hover:bg-navy-deep text-white text-sm font-semibold transition-colors">
+              <Upload className="h-4 w-4" /> Upload file
+            </span>
+            <input data-testid="operator-file-input" type="file" className="hidden" onChange={onFileSelect} />
+          </label>
+          {uploadedName && (
+            <span className="flex items-center gap-2 text-sm">
+              <span className="text-slate-700" data-testid="uploaded-file-name">{uploadedName}</span>
+              <span className="text-xs font-bold px-2 py-0.5 rounded-lg border bg-emerald-50 text-emerald-700 border-emerald-200" data-testid="uploaded-label">Uploaded</span>
+            </span>
+          )}
+        </div>
+      </Panel>
+
+      <Dialog open={formOpen} onOpenChange={setFormOpen}>
+        <DialogContent className="max-w-2xl" data-testid="patient-details-modal">
+          <DialogHeader>
+            <DialogTitle>Enter Patient Details</DialogTitle>
+          </DialogHeader>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Field label="Name"><Input data-testid="form-name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Field>
+            <Field label="Age"><Input data-testid="form-age" type="number" value={form.age} onChange={(e) => setForm({ ...form, age: e.target.value })} /></Field>
+            <Field label="Gender">
+              <select data-testid="form-gender" value={form.gender} onChange={(e) => setForm({ ...form, gender: e.target.value })} className="w-full h-10 rounded-lg border border-slate-200 px-3 text-sm bg-white">
+                {["Male", "Female", "Other"].map((g) => <option key={g}>{g}</option>)}
+              </select>
+            </Field>
+            <Field label="UHID"><Input data-testid="form-uhid" value={form.uhid} onChange={(e) => setForm({ ...form, uhid: e.target.value })} /></Field>
+            <Field label="Diagnosis"><Input data-testid="form-diagnosis" value={form.diagnosis} onChange={(e) => setForm({ ...form, diagnosis: e.target.value })} /></Field>
+            <Field label="Access Type">
+              <select data-testid="form-access-type" value={form.accessType} onChange={(e) => setForm({ ...form, accessType: e.target.value })} className="w-full h-10 rounded-lg border border-slate-200 px-3 text-sm bg-white">
+                {["AV Fistula", "AV Graft", "Catheter"].map((a) => <option key={a}>{a}</option>)}
+              </select>
+            </Field>
+            <Field label="Access Flow"><Input data-testid="form-access-flow" type="number" value={form.accessFlow} onChange={(e) => setForm({ ...form, accessFlow: e.target.value })} /></Field>
+            <Field label="Next Session"><Input data-testid="form-next-session" value={form.nextSession} onChange={(e) => setForm({ ...form, nextSession: e.target.value })} /></Field>
+            <Field label="Schedule"><Input data-testid="form-schedule" value={form.schedule} onChange={(e) => setForm({ ...form, schedule: e.target.value })} /></Field>
+          </div>
+          <div className="flex justify-end mt-2">
+            <Button data-testid="patient-details-submit-btn" onClick={submitForm} className="bg-saffron hover:bg-saffron-warm text-white font-bold">Submit</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <WorkflowStrip active={0} />
 
       <Panel title="Today's worklist" hint="Select a patient to open the pre-session review" testId="operator-worklist">
-        <PatientPickerList onPick={(id) => { setSelectedPatientId(id); navigate("/operator/pre-session"); }} />
+        <PatientPickerList onPick={(id) => { setSelectedPatientId(id); navigate("/operator/pre-session"); }} renderExtra={renderExtra} />
       </Panel>
     </div>
   );

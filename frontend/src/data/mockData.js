@@ -127,7 +127,7 @@ export const patients = [
       dialyser: "F8 HPS - high flux",
       anticoagulant: "Heparin 3000 IU bolus + 1000 IU/hr",
       frequency: "3 sessions / week",
-      verifiedBy: "Dr. N. Bhatt",
+      verifiedBy: "Dr. Girish Reddy",
       verifiedOn: "2026-05-02",
     },
     medications: [
@@ -158,8 +158,8 @@ export const patients = [
       { name: "Nephrology_OPD_Note_02May2026.pdf", type: "Clinical note", date: "2026-05-02", pages: 1 },
     ],
     notes: [
-      { date: "2026-06-02", by: "Dr. N. Bhatt", text: "Declining access flow with rising venous pressures. Refer vascular for re-look angiography if trend persists over next 3 sessions." },
-      { date: "2026-05-02", by: "Dr. N. Bhatt", text: "Kt/V trending down. Consider extending session duration to 250 min if access permits." },
+      { date: "2026-06-02", by: "Dr. Girish Reddy", text: "Declining access flow with rising venous pressures. Refer vascular for re-look angiography if trend persists over next 3 sessions." },
+      { date: "2026-05-02", by: "Dr. Girish Reddy", text: "Kt/V trending down. Consider extending session duration to 250 min if access permits." },
       { date: "2026-04-21", by: "S. Kulkarni (Operator)", text: "Prolonged bleeding post decannulation (14 min). Thrill weaker than usual." },
     ],
     sessions: buildSessions({ seed: 7, count: 12, startNo: 116, baseQb: 340, baseUf: 2.4, baseSbp: 152, dryWeight: 64.5, decline: 4 }),
@@ -294,7 +294,7 @@ export const patients = [
       dialyser: "F6 HPS",
       anticoagulant: "Heparin 2000 IU bolus",
       frequency: "2 sessions / week",
-      verifiedBy: "Dr. N. Bhatt",
+      verifiedBy: "Dr. Girish Reddy",
       verifiedOn: "2026-06-01",
     },
     medications: [
@@ -310,7 +310,7 @@ export const patients = [
     procedures: [{ date: "2026-03-12", name: "Tunnelled HD catheter insertion", by: "Dr. S. Rao (IR)" }],
     documents: [{ name: "Catheter_Insertion_Note_Mar2026.pdf", type: "Procedure note", date: "2026-03-12", pages: 2 }],
     notes: [
-      { date: "2026-06-01", by: "Dr. N. Bhatt", text: "Permanent access planning pending - vascular referral raised. Cardiac failure limits UF tolerance." },
+      { date: "2026-06-01", by: "Dr. Girish Reddy", text: "Permanent access planning pending - vascular referral raised. Cardiac failure limits UF tolerance." },
     ],
     sessions: buildSessions({ seed: 31, count: 8, startNo: 14, baseQb: 260, baseUf: 1.8, baseSbp: 118, dryWeight: 71.0, decline: 2 }),
   },
