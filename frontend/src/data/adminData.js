@@ -1,4 +1,4 @@
-// Mock platform/admin data for the Dialyso Phase-I prototype.
+// Mock platform/admin data for the DialyGo Phase-I prototype.
 
 export const platformUsers = [
   { id: "OPR-1041", name: "S. Kulkarni", role: "Operator", unit: "Nephro Unit B", status: "Active", lastLogin: "2026-06-19 07:42" },
@@ -7,7 +7,8 @@ export const platformUsers = [
   { id: "DOC-0071", name: "Dr. N. Bhatt", role: "Doctor", unit: "Nephrology", status: "Active", lastLogin: "2026-06-19 08:10" },
   { id: "DOC-0088", name: "Dr. P. Deshmukh", role: "Doctor", unit: "Nephrology", status: "Active", lastLogin: "2026-06-16 09:55" },
   { id: "DOC-0102", name: "Dr. S. Rao", role: "Doctor", unit: "Interventional Radiology", status: "Invited", lastLogin: "—" },
-  { id: "ADM-0001", name: "P. Raghavan", role: "Admin", unit: "Dialyso Operations", status: "Active", lastLogin: "2026-06-19 06:30" },
+  { id: "ADM-0001", name: "P. Raghavan", role: "Technical Admin", unit: "DialyGo Platform Operations", status: "Active", lastLogin: "2026-06-19 06:30" },
+  { id: "ADM-0002", name: "Dr. K. Sharma", role: "Dialysis Admin", unit: "Dialysis Services", status: "Active", lastLogin: "2026-06-19 07:15" },
   { id: "DUR-PT-00218", name: "Ramesh Iyer", role: "Patient", unit: "Maintenance HD", status: "Active", lastLogin: "2026-06-14 19:02" },
   { id: "DUR-PT-00341", name: "Fatima Sheikh", role: "Patient", unit: "Maintenance HD", status: "Active", lastLogin: "2026-06-12 18:40" },
   { id: "DUR-PT-00477", name: "Joseph D'Souza", role: "Patient", unit: "Maintenance HD", status: "Consent pending", lastLogin: "2026-06-10 17:15" },

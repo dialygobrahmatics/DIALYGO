@@ -67,7 +67,7 @@ export default function HistoryTab({ patient }) {
                     <XAxis dataKey="date" tick={{ fontSize: 10 }} stroke="#94a3b8" />
                     <YAxis tick={{ fontSize: 10 }} stroke="#94a3b8" />
                     <Tooltip contentStyle={{ fontSize: 12, borderRadius: 6 }} />
-                    <Line type="monotone" dataKey="hb" stroke="#2563eb" strokeWidth={2} name="Hb g/dL" />
+                    <Line type="monotone" dataKey="hb" stroke="#0a3d62" strokeWidth={2} name="Hb g/dL" />
                     <Line type="monotone" dataKey="k" stroke="#dc2626" strokeWidth={2} name="K mmol/L" />
                   </LineChart>
                 </ResponsiveContainer>
@@ -159,8 +159,8 @@ export default function HistoryTab({ patient }) {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" data-testid="documents-list">
             {patient.documents.map((d, i) => (
               <div key={i} className="border border-slate-200 rounded-md p-4 flex items-start gap-3">
-                <div className="h-9 w-9 rounded bg-blue-50 border border-blue-200 grid place-items-center shrink-0">
-                  <FileText className="h-4 w-4 text-blue-700" />
+                <div className="h-9 w-9 rounded bg-navy-tint border border-[#c3dcf7] grid place-items-center shrink-0">
+                  <FileText className="h-4 w-4 text-navy" />
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm font-semibold truncate">{d.name}</p>
@@ -177,7 +177,7 @@ export default function HistoryTab({ patient }) {
         <TabsContent value="notes" className="mt-5">
           <ul className="space-y-3" data-testid="notes-list">
             {patient.notes.map((n, i) => (
-              <li key={i} className="border-l-2 border-blue-600 pl-4 py-1">
+              <li key={i} className="border-l-2 border-saffron pl-4 py-1">
                 <p className="metric-num text-xs text-slate-500">{n.date} · {n.by}</p>
                 <p className="text-sm text-slate-700 mt-1">{n.text}</p>
               </li>

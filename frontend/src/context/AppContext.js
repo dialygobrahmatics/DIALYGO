@@ -52,19 +52,21 @@ export const ROLES = {
   operator: { id: "operator", label: "Operator", home: "/operator/home", tagline: "Dialysis Procedure Operator" },
   doctor: { id: "doctor", label: "Doctor", home: "/doctor/home", tagline: "Consultant Nephrologist" },
   patient: { id: "patient", label: "Patient / Guest", home: "/patient/home", tagline: "Patient self-service" },
-  admin: { id: "admin", label: "Admin", home: "/admin/home", tagline: "Platform administration" },
+  dialysisadmin: { id: "dialysisadmin", label: "Dialysis Admin", home: "/clinical-admin/home", tagline: "Clinical unit administration" },
+  techadmin: { id: "techadmin", label: "Technical Admin", home: "/tech-admin/home", tagline: "Platform & systems administration" },
 };
 
 const demoUsers = {
   operator: { id: "OPR-1041", name: "S. Kulkarni", role: "operator", title: "Senior Dialysis Technician", unit: "Nephro Unit B" },
   doctor: { id: "DOC-0071", name: "Dr. N. Bhatt", role: "doctor", title: "Consultant Nephrologist", unit: "Nephrology" },
   patient: { id: "DUR-PT-00218", name: "Ramesh Iyer", role: "patient", title: "Patient", unit: "Maintenance haemodialysis" },
-  admin: { id: "ADM-0001", name: "P. Raghavan", role: "admin", title: "Platform Administrator", unit: "Dialyso Operations" },
+  dialysisadmin: { id: "ADM-0002", name: "Dr. K. Sharma", role: "dialysisadmin", title: "Dialysis Unit Administrator", unit: "Dialysis Services" },
+  techadmin: { id: "ADM-0001", name: "P. Raghavan", role: "techadmin", title: "Technical Administrator", unit: "DialyGo Platform Operations" },
 };
 
 export function AppProvider({ children }) {
   const [operator, setOperator] = useState(() => {
-    const raw = localStorage.getItem("dialyso_user");
+    const raw = localStorage.getItem("dialygo_user");
     return raw ? JSON.parse(raw) : null;
   });
   const [drafts, setDrafts] = useState({});
@@ -74,8 +76,8 @@ export function AppProvider({ children }) {
   const [engineRuns, setEngineRuns] = useState({});
 
   useEffect(() => {
-    if (operator) localStorage.setItem("dialyso_user", JSON.stringify(operator));
-    else localStorage.removeItem("dialyso_user");
+    if (operator) localStorage.setItem("dialygo_user", JSON.stringify(operator));
+    else localStorage.removeItem("dialygo_user");
   }, [operator]);
 
   const login = (roleId, identifier, consent) => {

@@ -30,15 +30,15 @@ export function PatientHome() {
   const last = patient.sessions[patient.sessions.length - 1];
   return (
     <div className="space-y-4">
-      <div className="bg-white border border-slate-200 rounded-md shadow-sm p-6">
+      <div className="dg-card p-6">
         <p className="overline">Welcome back</p>
         <h1 className="font-head text-3xl font-extrabold mt-1">{patient.name}</h1>
         <p className="text-sm text-slate-600 mt-2">{patient.id} · {patient.schedule}</p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5">
-          <div className="rounded border border-slate-200 px-4 py-3"><p className="overline">Sessions completed</p><p className="metric-num text-2xl font-semibold mt-1">{patient.sessions.length}</p></div>
-          <div className="rounded border border-slate-200 px-4 py-3"><p className="overline">Last session</p><p className="metric-num text-sm font-semibold mt-1">{last.date}</p></div>
-          <div className="rounded border border-slate-200 px-4 py-3"><p className="overline">Dry weight</p><p className="metric-num text-2xl font-semibold mt-1">{patient.dryWeight}</p></div>
-          <div className={`rounded border px-4 py-3 ${attention.length ? "bg-amber-50 border-amber-200" : "bg-emerald-50 border-emerald-200"}`}>
+          <div className="dg-stat px-4 py-3"><p className="overline">Sessions completed</p><p className="metric-num text-2xl font-semibold mt-1">{patient.sessions.length}</p></div>
+          <div className="dg-stat px-4 py-3"><p className="overline">Last session</p><p className="metric-num text-sm font-semibold mt-1">{last.date}</p></div>
+          <div className="dg-stat px-4 py-3"><p className="overline">Dry weight</p><p className="metric-num text-2xl font-semibold mt-1">{patient.dryWeight}</p></div>
+          <div className={`rounded-lg border px-4 py-3 ${attention.length ? "bg-amber-50 border-amber-200" : "bg-emerald-50 border-emerald-200"}`}>
             <p className="overline">Points to discuss</p>
             <p className="metric-num text-2xl font-semibold mt-1" data-testid="patient-attention-count">{attention.length}</p>
           </div>
@@ -49,7 +49,7 @@ export function PatientHome() {
         {attention.length === 0 ? <EmptyState text="No attention indicators right now — keep following your fluid and diet advice." /> : (
           <ul className="space-y-3">
             {attention.map((a, i) => (
-              <li key={i} className={`rounded-md border p-4 ${levelColor(a.severity === "high" ? "moderate" : "info")}`}>
+              <li key={i} className={`rounded-xl border p-4 ${levelColor(a.severity === "high" ? "moderate" : "info")}`}>
                 <p className="text-sm font-semibold">{a.title}</p>
                 <p className="text-sm mt-1 opacity-90">{a.detail}</p>
               </li>
@@ -83,13 +83,13 @@ export function PatientMyHealth() {
               <XAxis dataKey="date" tick={{ fontSize: 10 }} stroke="#94a3b8" />
               <YAxis tick={{ fontSize: 10 }} stroke="#94a3b8" />
               <Tooltip contentStyle={{ fontSize: 12, borderRadius: 6 }} />
-              <Line type="monotone" dataKey="hb" stroke="#2563eb" strokeWidth={2} name="Hb" />
+              <Line type="monotone" dataKey="hb" stroke="#0a3d62" strokeWidth={2} name="Hb" />
               <Line type="monotone" dataKey="k" stroke="#dc2626" strokeWidth={2} name="Potassium" />
               <Line type="monotone" dataKey="ktv" stroke="#10b981" strokeWidth={2} name="Kt/V" />
             </LineChart>
           </ResponsiveContainer>
         </div>
-        <div className="mt-6 rounded-md border border-slate-200 p-4">
+        <div className="mt-6 rounded-xl border border-slate-200 p-4">
           <p className="overline flex items-center gap-1.5"><HeartPulse className="h-3.5 w-3.5" /> My dialysis access</p>
           <p className="text-sm text-slate-700 mt-2">
             {patient.vascular.type} in your {patient.vascular.side.toLowerCase()} arm, in use since {patient.vascular.createdOn}.
@@ -114,7 +114,7 @@ export function PatientUpload() {
   return (
     <div className="space-y-4">
       <Panel title="Upload Data" hint="Share reports and documents with your care team. Mock upload — no file leaves this device." testId="patient-upload-panel">
-        <div className="border-2 border-dashed border-slate-300 rounded-md p-8 text-center bg-slate-50">
+        <div className="dg-dashed p-10 text-center bg-slate-50/60">
           <Upload className="h-8 w-8 text-slate-400 mx-auto" />
           <p className="text-sm font-semibold mt-3">Drop a report here, or record its details below</p>
           <p className="text-xs text-slate-500 mt-1">Scanned report extraction is a future release and is not available in Phase I.</p>
@@ -124,7 +124,7 @@ export function PatientUpload() {
             <Input data-testid="upload-name-input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Labs_June2026.pdf" />
           </Field>
           <Field label="Document type">
-            <select data-testid="upload-type-select" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className="w-full h-10 rounded border border-slate-200 px-3 text-sm bg-white">
+            <select data-testid="upload-type-select" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className="w-full h-10 rounded-lg border border-slate-200 px-3 text-sm bg-white">
               {["Laboratory report", "Vascular Doppler", "Discharge summary", "Prescription", "Clinical note", "Other"].map((t) => <option key={t}>{t}</option>)}
             </select>
           </Field>
@@ -132,15 +132,15 @@ export function PatientUpload() {
             <Input data-testid="upload-note-input" value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} placeholder="Optional" />
           </Field>
         </div>
-        <Button data-testid="upload-submit-btn" className="mt-4 bg-blue-600 hover:bg-blue-700" onClick={submit}>Submit document</Button>
+        <Button data-testid="upload-submit-btn" className="mt-4 bg-saffron hover:bg-saffron-warm text-white font-bold" onClick={submit}>Submit document</Button>
       </Panel>
 
       <Panel title="Uploaded in this session" testId="patient-upload-log">
         {uploads.length === 0 ? <EmptyState text="Nothing uploaded yet." /> : (
           <ul className="space-y-2" data-testid="upload-list">
             {uploads.map((u) => (
-              <li key={u.id} className="rounded border border-slate-200 p-3 flex items-start gap-3">
-                <FileText className="h-4 w-4 text-blue-700 mt-0.5" />
+              <li key={u.id} className="rounded-lg border border-slate-200 p-3 flex items-start gap-3">
+                <FileText className="h-4 w-4 text-navy mt-0.5" />
                 <div>
                   <p className="text-sm font-semibold">{u.name}</p>
                   <p className="text-xs text-slate-500 mt-0.5">{u.type} · {u.status} · {new Date(u.at).toLocaleTimeString()}</p>
@@ -162,7 +162,7 @@ export function PatientReports() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {patient.documents.map((d, i) => (
           <div key={i} className="border border-slate-200 rounded-md p-4 flex items-start gap-3">
-            <div className="h-9 w-9 rounded bg-blue-50 border border-blue-200 grid place-items-center shrink-0"><FileText className="h-4 w-4 text-blue-700" /></div>
+            <div className="h-9 w-9 rounded bg-navy-tint border border-[#c3dcf7] grid place-items-center shrink-0"><FileText className="h-4 w-4 text-navy" /></div>
             <div className="min-w-0">
               <p className="text-sm font-semibold truncate">{d.name}</p>
               <p className="text-xs text-slate-500 mt-0.5">{d.type} · {d.date} · {d.pages} pages</p>
@@ -196,7 +196,7 @@ export function PatientDialysisOverview() {
               <XAxis dataKey="name" tick={{ fontSize: 10 }} stroke="#94a3b8" />
               <YAxis tick={{ fontSize: 10 }} stroke="#94a3b8" />
               <Tooltip contentStyle={{ fontSize: 12, borderRadius: 6 }} />
-              <Line type="monotone" dataKey="uf" stroke="#2563eb" strokeWidth={2} name="Fluid removed (L)" />
+              <Line type="monotone" dataKey="uf" stroke="#0a3d62" strokeWidth={2} name="Fluid removed (L)" />
               <Line type="monotone" dataKey="gain" stroke="#10b981" strokeWidth={2} name="Weight gain (kg)" />
             </LineChart>
           </ResponsiveContainer>
@@ -217,7 +217,7 @@ export function PatientMedicalHistory() {
             <p className="overline">Diagnosis & conditions</p>
             <p className="text-sm font-semibold mt-2">{patient.primaryDiagnosis}</p>
             <div className="flex flex-wrap gap-2 mt-3">
-              {patient.comorbidities.map((c) => <span key={c} className="text-xs font-semibold px-2 py-1 rounded border border-slate-200 bg-slate-50">{c}</span>)}
+              {patient.comorbidities.map((c) => <span key={c} className="text-xs font-semibold px-2 py-1 rounded-lg border border-slate-200 bg-slate-50">{c}</span>)}
             </div>
             <p className="overline mt-6">Vascular access</p>
             <p className="text-sm text-slate-700 mt-2">{patient.vascular.type} · {patient.vascular.site} · created {patient.vascular.createdOn}</p>
@@ -226,7 +226,7 @@ export function PatientMedicalHistory() {
             <p className="overline">Current medicines</p>
             <ul className="mt-2 space-y-2">
               {patient.medications.map((m, i) => (
-                <li key={i} className="text-sm text-slate-700 rounded border border-slate-200 px-3 py-2">
+                <li key={i} className="text-sm text-slate-700 dg-stat px-3 py-2">
                   <span className="font-semibold">{m.name}</span> · {m.dose} {m.route} · {m.freq}
                 </li>
               ))}
@@ -261,7 +261,7 @@ export function PatientProfile() {
           <Metric label="Age" value={patient.age} unit="years" />
           <Metric label="Gender" value={patient.gender} />
           <Metric label="Blood group" value={patient.bloodGroup} />
-          <Metric label="Dialyso ID" value={patient.id} />
+          <Metric label="DialyGo ID" value={patient.id} />
           <Metric label="UHID" value={patient.uhid} />
           <Metric label="Mobile" value={patient.phone} />
           <Metric label="Dialysis vintage" value={patient.dialysisVintageMonths} unit="months" />
@@ -275,12 +275,12 @@ export function PatientProfile() {
           {otpSent && (
             <>
               <Field label="Enter OTP"><Input data-testid="otp-input" value={otp} onChange={(e) => setOtp(e.target.value)} placeholder="123456" className="metric-num w-32" /></Field>
-              <Button data-testid="verify-otp-btn" className="bg-blue-600 hover:bg-blue-700" onClick={() => { if (otp.trim() === "123456") { setVerified(true); toast.success("Mobile verified (mock)"); } else toast.error("Invalid mock OTP — use 123456"); }}>Verify</Button>
+              <Button data-testid="verify-otp-btn" className="bg-navy hover:bg-navy-deep" onClick={() => { if (otp.trim() === "123456") { setVerified(true); toast.success("Mobile verified (mock)"); } else toast.error("Invalid mock OTP — use 123456"); }}>Verify</Button>
             </>
           )}
           {verified && <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded px-2 py-1" data-testid="otp-verified-badge"><CheckCircle2 className="h-3.5 w-3.5" /> Verified</span>}
         </div>
-        <div className="mt-5 rounded-md border border-dashed border-slate-300 bg-slate-50 p-4">
+        <div className="mt-5 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4">
           <p className="text-sm font-semibold flex items-center gap-2"><Fingerprint className="h-4 w-4 text-slate-500" /> Biometric, fingerprint and face-recognition login</p>
           <p className="text-xs text-slate-600 mt-1">Future Release – Not Available in Phase I.</p>
         </div>
@@ -289,17 +289,17 @@ export function PatientProfile() {
       <Panel title="Consent for data sharing" hint="DPDP Act 2023 — explicit, revocable consent" testId="patient-consent-panel">
         <div className="space-y-3">
           {[
-            { key: "share", text: "I consent to sharing my personal, medical and clinical data with Dialyso and my treating facility for the purpose of dialysis care delivery." },
+            { key: "share", text: "I consent to sharing my personal, medical and clinical data with DialyGo and my treating facility for the purpose of dialysis care delivery." },
             { key: "privacy", text: "I have read and accept the privacy notice and prototype disclaimer: this application provides decision support only and does not replace clinical judgement." },
             { key: "research", text: "Optional: I consent to the use of my de-identified data for service improvement." },
           ].map((c) => (
-            <label key={c.key} className="flex items-start gap-3 rounded border border-slate-200 p-3 cursor-pointer hover:border-slate-300 transition-colors">
+            <label key={c.key} className="flex items-start gap-3 rounded-lg border border-slate-200 p-3 cursor-pointer hover:border-slate-300 transition-colors">
               <Checkbox data-testid={`consent-${c.key}`} checked={consents[c.key]} onCheckedChange={(v) => setConsents((p) => ({ ...p, [c.key]: !!v }))} />
               <span className="text-sm text-slate-700">{c.text}</span>
             </label>
           ))}
         </div>
-        <Button data-testid="save-consent-btn" className="mt-4 bg-blue-600 hover:bg-blue-700" onClick={() => toast.success("Consent preferences saved")}>
+        <Button data-testid="save-consent-btn" className="mt-4 bg-navy hover:bg-navy-deep" onClick={() => toast.success("Consent preferences saved")}>
           <ShieldCheck className="h-4 w-4 mr-1.5" /> Save consent preferences
         </Button>
         <p className="text-xs text-slate-500 mt-3 flex items-start gap-1.5">

@@ -43,7 +43,7 @@ export default function CoreEngineRunner({ patient, onComplete, ctaLabel = "Revi
       title="Rule-Based Core Engine"
       hint="Consolidates the patient's longitudinal evidence and compares it with the current session. Prototype analysis — decision support only."
       right={
-        <Button data-testid="run-core-engine-btn" onClick={run} disabled={running} className="bg-blue-600 hover:bg-blue-700">
+        <Button data-testid="run-core-engine-btn" onClick={run} disabled={running} className="bg-saffron hover:bg-saffron-warm text-white font-bold">
           {running ? <><Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> Running</> : <><Cpu className="h-4 w-4 mr-1.5" /> Run core engine</>}
         </Button>
       }
@@ -52,7 +52,7 @@ export default function CoreEngineRunner({ patient, onComplete, ctaLabel = "Revi
         {steps.map((s, i) => {
           const complete = done > i || (!!lastRun && !running && done === 0);
           return (
-            <li key={i} className={`flex items-center gap-2.5 text-sm rounded px-3 py-2 border transition-colors ${complete ? "border-emerald-200 bg-emerald-50 text-emerald-800" : running && done === i ? "border-blue-200 bg-blue-50 text-blue-800" : "border-slate-200 text-slate-600"}`}>
+            <li key={i} className={`flex items-center gap-2.5 text-sm rounded px-3 py-2 border transition-colors ${complete ? "border-emerald-200 bg-emerald-50 text-emerald-800" : running && done === i ? "border-[#c3dcf7] bg-navy-tint text-navy" : "border-slate-200 text-slate-600"}`}>
               {complete ? <Check className="h-4 w-4 shrink-0" /> : running && done === i ? <Loader2 className="h-4 w-4 shrink-0 animate-spin" /> : <span className="h-4 w-4 shrink-0 rounded-full border border-slate-300" />}
               {s}
             </li>
@@ -61,10 +61,10 @@ export default function CoreEngineRunner({ patient, onComplete, ctaLabel = "Revi
       </ol>
 
       {(lastRun || done === steps.length) && (
-        <div className="mt-5 rounded-md border border-blue-200 bg-blue-50 p-4 flex flex-col sm:flex-row sm:items-center gap-3 justify-between" data-testid="core-engine-result">
+        <div className="mt-5 rounded-xl border border-[#c3dcf7] bg-navy-tint p-4 flex flex-col sm:flex-row sm:items-center gap-3 justify-between" data-testid="core-engine-result">
           <div>
-            <p className="text-sm font-bold text-blue-900">Consolidation complete — output passed to the reporting layer</p>
-            <p className="text-xs text-blue-800 mt-1">
+            <p className="text-sm font-bold text-navy">Consolidation complete — output passed to the reporting layer</p>
+            <p className="text-xs text-navy mt-1">
               Last run {lastRun ? new Date(lastRun).toLocaleString() : "just now"} · Prototype Analysis · Decision Support Only · Requires Qualified Clinical Review
             </p>
           </div>

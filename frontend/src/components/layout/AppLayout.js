@@ -30,8 +30,8 @@ const SidebarLinks = ({ role, onNavigate, collapsed }) => (
         onClick={onNavigate}
         data-testid={`nav-${item.to.split("/").filter(Boolean).join("-")}`}
         className={({ isActive }) =>
-          `flex items-center gap-3 mx-2 my-0.5 px-3 py-2.5 rounded text-sm font-medium transition-colors ${
-            isActive ? "bg-blue-600 text-white" : "text-slate-300 hover:bg-slate-800 hover:text-white"
+          `flex items-center gap-3 mx-2 my-0.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+            isActive ? "bg-white text-navy shadow-sm" : "text-white/70 hover:bg-white/10 hover:text-white"
           }`
         }
       >
@@ -39,7 +39,7 @@ const SidebarLinks = ({ role, onNavigate, collapsed }) => (
         {!collapsed && <span className="truncate">{item.label}</span>}
       </NavLink>
     ))}
-    <div className="mt-4 pt-3 border-t border-slate-800 mx-2">
+    <div className="mt-4 pt-3 border-t border-white/15 mx-2">
       {commonNav.map((item) => (
         <NavLink
           key={item.to}
@@ -47,8 +47,8 @@ const SidebarLinks = ({ role, onNavigate, collapsed }) => (
           onClick={onNavigate}
           data-testid="nav-roadmap"
           className={({ isActive }) =>
-            `flex items-center gap-3 px-3 py-2.5 rounded text-sm font-medium transition-colors ${
-              isActive ? "bg-blue-600 text-white" : "text-slate-400 hover:bg-slate-800 hover:text-white"
+            `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+              isActive ? "bg-white text-navy shadow-sm" : "text-white/60 hover:bg-white/10 hover:text-white"
             }`
           }
         >
@@ -69,20 +69,22 @@ export default function AppLayout({ children }) {
   const [q, setQ] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
 
-  const crumb = pageTitles[location.pathname] || ["Dialyso", "Overview"];
+  const crumb = pageTitles[location.pathname] || ["DialyGo", "Overview"];
   const results = q ? patients.filter((p) => `${p.name} ${p.id} ${p.uhid}`.toLowerCase().includes(q.toLowerCase())) : [];
 
   const onSwitchRole = (r) => navigate(switchRole(r));
 
   const brand = (
     <div className="flex items-center gap-2.5 min-w-0">
-      <div className="h-9 w-9 rounded bg-blue-600 grid place-items-center text-white shrink-0">
-        <Activity className="h-5 w-5" />
+      <div className="h-9 w-9 rounded-xl bg-white grid place-items-center shrink-0 shadow-sm">
+        <Activity className="h-5 w-5 text-navy" />
       </div>
       {!collapsed && (
         <div className="min-w-0">
-          <p className="font-head font-extrabold text-white leading-none">Dialyso</p>
-          <p className="text-[10px] uppercase tracking-[0.16em] text-slate-400 mt-1">Operator Intelligence</p>
+          <p className="font-head font-extrabold leading-none text-lg tracking-tight" style={{ color: "#ffffff" }}>
+            Dialy<span style={{ color: "#e48404" }}>Go</span>
+          </p>
+          <p className="text-[10px] uppercase tracking-[0.16em] mt-1" style={{ color: "rgba(255,255,255,0.6)" }}>Operator Intelligence</p>
         </div>
       )}
     </div>
@@ -91,28 +93,28 @@ export default function AppLayout({ children }) {
   return (
     <div className="min-h-screen bg-slate-50 flex">
       <aside
-        className={`hidden lg:flex flex-col bg-slate-900 border-r border-slate-800 sticky top-0 h-screen transition-[width] duration-200 ${collapsed ? "w-[76px]" : "w-64"}`}
+        className={`hidden lg:flex flex-col dg-gradient-navy sticky top-0 h-screen transition-[width] duration-200 ${collapsed ? "w-[76px]" : "w-64"}`}
         data-testid="sidebar"
       >
-        <div className="h-16 flex items-center justify-between px-4 border-b border-slate-800">
+        <div className="h-16 flex items-center justify-between px-4 border-b border-white/12">
           {brand}
           <button
             data-testid="sidebar-collapse-btn"
             onClick={() => setCollapsed((c) => !c)}
-            className="text-slate-400 hover:text-white transition-colors"
+            className="text-white/60 hover:text-white transition-colors"
           >
             {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
           </button>
         </div>
         {!collapsed && (
-          <div className="px-4 py-3 border-b border-slate-800">
-            <p className="text-[10px] uppercase tracking-[0.16em] text-slate-500">Role modules</p>
+          <div className="px-4 py-3 border-b border-white/12">
+            <p className="text-[10px] uppercase tracking-[0.16em] text-white/45">Role modules</p>
             <p className="text-sm font-semibold text-white mt-1">{ROLES[role]?.label}</p>
           </div>
         )}
         <SidebarLinks role={role} collapsed={collapsed} />
         {!collapsed && (
-          <p className="text-[10px] text-slate-500 px-4 py-3 border-t border-slate-800 leading-relaxed">
+          <p className="text-[10px] text-white/45 px-4 py-3 border-t border-white/12 leading-relaxed">
             Phase-I prototype · rule-based decision support · requires qualified clinical review
           </p>
         )}
@@ -127,13 +129,13 @@ export default function AppLayout({ children }) {
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" aria-label="Dialyso navigation" className="p-0 w-64 bg-slate-900 border-slate-800">
-                <div className="h-16 flex items-center px-4 border-b border-slate-800">{brand}</div>
+              <SheetContent side="left" aria-label="DialyGo navigation" className="p-0 w-64 dg-gradient-navy border-navy-deep">
+                <div className="h-16 flex items-center px-4 border-b border-white/12">{brand}</div>
                 <SidebarLinks role={role} onNavigate={() => setMobileOpen(false)} />
               </SheetContent>
             </Sheet>
 
-            <Link to={ROLES[role]?.home || "/"} data-testid="home-icon-btn" className="h-9 w-9 rounded border border-slate-200 grid place-items-center hover:border-blue-600 hover:text-blue-700 transition-colors shrink-0">
+            <Link to={ROLES[role]?.home || "/"} data-testid="home-icon-btn" className="h-9 w-9 rounded-xl border border-slate-200 grid place-items-center text-navy hover:border-navy hover:bg-navy-tint transition-colors shrink-0">
               <Home className="h-4 w-4" />
             </Link>
 
@@ -160,7 +162,7 @@ export default function AppLayout({ children }) {
               </PopoverTrigger>
               <PopoverContent align="end" onOpenAutoFocus={(e) => e.preventDefault()} className="w-80 p-2" data-testid="topbar-search-results">
                 {results.length === 0 ? (
-                  <p className="text-sm text-slate-500 p-2">Type a patient name, Dialyso ID or UHID.</p>
+                  <p className="text-sm text-slate-500 p-2">Type a patient name, DialyGo ID or UHID.</p>
                 ) : (
                   results.map((p) => (
                     <button
@@ -202,9 +204,9 @@ export default function AppLayout({ children }) {
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button data-testid="profile-menu-btn" className="flex items-center gap-2 pl-2 pr-1 py-1 rounded border border-slate-200 hover:border-slate-300 transition-colors">
-                  <span className="h-7 w-7 rounded-full bg-blue-50 border border-blue-200 grid place-items-center">
-                    <UserRound className="h-4 w-4 text-blue-700" />
+                <button data-testid="profile-menu-btn" className="flex items-center gap-2 pl-2 pr-1 py-1 rounded-xl border border-slate-200 hover:border-navy transition-colors">
+                  <span className="h-7 w-7 rounded-full bg-navy-tint border border-[#c3dcf7] grid place-items-center">
+                    <UserRound className="h-4 w-4 text-navy" />
                   </span>
                   <span className="hidden sm:block text-left">
                     <span className="block text-xs font-semibold leading-none" data-testid="profile-name">{user?.name}</span>
@@ -222,7 +224,7 @@ export default function AppLayout({ children }) {
                 <DropdownMenuLabel className="overline">Demo role switcher</DropdownMenuLabel>
                 {Object.values(ROLES).map((r) => (
                   <DropdownMenuItem key={r.id} data-testid={`switch-role-${r.id}`} onClick={() => onSwitchRole(r.id)}>
-                    <span className={role === r.id ? "font-bold text-blue-700" : ""}>{r.label}</span>
+                    <span className={role === r.id ? "font-bold text-navy" : ""}>{r.label}</span>
                   </DropdownMenuItem>
                 ))}
                 <DropdownMenuSeparator />
@@ -236,12 +238,12 @@ export default function AppLayout({ children }) {
             </DropdownMenu>
           </div>
 
-          <div className="px-3 sm:px-5 pb-2 flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded px-2 py-0.5">
+          <div className="px-3 sm:px-5 pb-2.5 flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2.5 py-0.5">
               <ShieldCheck className="h-3.5 w-3.5" /> DPDP consent on file
             </span>
-            <span className="text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 rounded px-2 py-0.5">Prototype Analysis · Decision Support Only</span>
-            {role !== "patient" && role !== "admin" && (
+            <span className="text-xs font-semibold dg-chip-navy rounded-full px-2.5 py-0.5">Prototype Analysis · Decision Support Only</span>
+            {role !== "patient" && role !== "techadmin" && role !== "dialysisadmin" && (
               <span className="text-xs text-slate-600" data-testid="active-patient-chip">
                 Active patient: <span className="font-semibold">{patients.find((p) => p.id === selectedPatientId)?.name}</span>
               </span>
@@ -253,7 +255,7 @@ export default function AppLayout({ children }) {
 
         <footer className="px-4 sm:px-6 py-5 no-print">
           <p className="text-xs text-slate-500 border-t border-slate-200 pt-4">
-            Dialyso Phase-I prototype · Rule-based, illustrative, mock-data core engine. Not predictive ML, not image analysis,
+            DialyGo Phase-I prototype · Rule-based, illustrative, mock-data core engine. Not predictive ML, not image analysis,
             not autonomous machine control. No hereditary or gene-level personalisation is captured or used. Requires qualified
             clinical review before any recommendation is applied.
           </p>

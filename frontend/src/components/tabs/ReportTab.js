@@ -26,7 +26,7 @@ export default function ReportTab({ patient, insight }) {
   const sendWhatsapp = (kind) => {
     if (!signed) return toast.error("Clinician sign-off is required before dispatch.");
     const body = kind === "pdf" ? whatsappTemplates.reportDispatch(patient) : whatsappTemplates.sessionSummary(patient, { sessionNo: patient.nextSessionNo, date: new Date().toISOString().slice(0, 10), durationMin: insight.tuning.durationMin, ufAchieved: draft.after.actualUf || insight.tuning.ufTargetL });
-    addWhatsapp({ to: phone, kind: kind === "pdf" ? "PDF report" : "Text message", body, attachment: kind === "pdf" ? `Dialyso_Session_${patient.nextSessionNo}_${patient.id}.pdf` : null });
+    addWhatsapp({ to: phone, kind: kind === "pdf" ? "PDF report" : "Text message", body, attachment: kind === "pdf" ? `DialyGo_Session_${patient.nextSessionNo}_${patient.id}.pdf` : null });
     toast.success(`WhatsApp ${kind === "pdf" ? "report" : "message"} queued to ${phone}`, { description: "MOCKED dispatch — Phase-2 connects the WhatsApp Business API." });
   };
 
@@ -44,7 +44,7 @@ export default function ReportTab({ patient, insight }) {
           </div>
         }
       >
-        <div className="rounded-md border border-slate-200 p-4 mb-6">
+        <div className="rounded-xl border border-slate-200 p-4 mb-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Metric label="Patient" value={patient.name} sub={`${patient.id} · UHID ${patient.uhid}`} />
             <Metric label="Session" value={`#${patient.nextSessionNo}`} sub={new Date().toDateString()} />
@@ -54,10 +54,10 @@ export default function ReportTab({ patient, insight }) {
         </div>
 
         <p className="overline">1 · Session tuning recommendation</p>
-        <p className="text-xs text-blue-800 bg-blue-50 border border-blue-200 rounded px-3 py-2 mt-2 inline-block font-semibold">
+        <p className="text-xs text-navy bg-navy-tint border border-[#c3dcf7] rounded px-3 py-2 mt-2 inline-block font-semibold">
           Decision Support Recommendation — not an autonomous machine setting
         </p>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-3 rounded-md border border-blue-200 bg-blue-50 p-4" data-testid="tuning-block">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-3 rounded-xl border border-[#c3dcf7] bg-navy-tint p-4" data-testid="tuning-block">
           <Metric label="Blood flow" value={insight.tuning.bloodFlow} unit="mL/min" testId="tuning-qb" />
           <Metric label="Dialysate flow" value={insight.tuning.dialysateFlow} unit="mL/min" />
           <Metric label="Duration" value={insight.tuning.durationMin} unit="min" />
@@ -66,12 +66,12 @@ export default function ReportTab({ patient, insight }) {
         </div>
         <ul className="mt-3 space-y-1.5">
           {insight.tuning.rationale.map((r, i) => (
-            <li key={i} className="text-sm text-slate-700 flex gap-2"><span className="text-blue-600">·</span>{r}</li>
+            <li key={i} className="text-sm text-slate-700 flex gap-2"><span className="text-navy">·</span>{r}</li>
           ))}
         </ul>
 
         <p className="overline mt-8">2 · Access status check</p>
-        <div className={`mt-3 rounded-md border p-4 ${levelColor(insight.accessStatus.level)}`} data-testid="access-status-block">
+        <div className={`mt-3 rounded-xl border p-4 ${levelColor(insight.accessStatus.level)}`} data-testid="access-status-block">
           <p className="text-sm font-bold">{insight.accessStatus.objective}</p>
           <p className="text-sm mt-1.5">{insight.accessStatus.summary}</p>
           <p className="text-sm mt-1.5">Current condition: {insight.accessStatus.status}</p>
@@ -83,7 +83,7 @@ export default function ReportTab({ patient, insight }) {
         <p className="overline mt-8">4 · Risk flags</p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3" data-testid="risk-flags">
           {insight.riskFlags.map((f, i) => (
-            <div key={i} className={`rounded-md border p-4 ${levelColor(f.level)}`} data-testid={`risk-flag-${i}`}>
+            <div key={i} className={`rounded-xl border p-4 ${levelColor(f.level)}`} data-testid={`risk-flag-${i}`}>
               <div className="flex items-center justify-between gap-2">
                 <p className="text-sm font-bold">{f.name}</p>
                 <span className="text-xs font-bold uppercase tracking-wider">{f.level}</span>
@@ -94,7 +94,7 @@ export default function ReportTab({ patient, insight }) {
         </div>
         <p className="text-xs text-slate-500 mt-3">
           Risk flags are derived from dialysis history, vascular-access records and laboratory data only. No hereditary or
-          gene-level personalisation is used anywhere in Dialyso.
+          gene-level personalisation is used anywhere in DialyGo.
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
@@ -102,7 +102,7 @@ export default function ReportTab({ patient, insight }) {
             <p className="overline flex items-center gap-1.5"><ListChecks className="h-3.5 w-3.5" /> 5a · Plan now (this session)</p>
             <ul className="mt-3 space-y-2" data-testid="plan-now">
               {insight.planNow.map((p, i) => (
-                <li key={i} className="text-sm text-slate-700 flex gap-2"><CheckCircle2 className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />{p}</li>
+                <li key={i} className="text-sm text-slate-700 flex gap-2"><CheckCircle2 className="h-4 w-4 text-navy mt-0.5 shrink-0" />{p}</li>
               ))}
             </ul>
           </div>
@@ -117,7 +117,7 @@ export default function ReportTab({ patient, insight }) {
         </div>
 
         <p className="overline mt-8">6 · Clinician sign-off</p>
-        <div className="mt-3 rounded-md border border-slate-200 bg-slate-50 p-4" data-testid="signoff-block">
+        <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-4" data-testid="signoff-block">
           {signOff.status === "returned" ? (
             <div className="flex items-start gap-3">
               <Stamp className="h-5 w-5 text-amber-700 mt-0.5" />
@@ -151,7 +151,7 @@ export default function ReportTab({ patient, insight }) {
                   <Input data-testid="signoff-designation-input" className="mt-1.5" value={signOff.designation} onChange={(e) => updateDraft(patient, "signOff", { designation: e.target.value })} placeholder="Consultant Nephrologist" />
                 </label>
                 <div className="flex items-end">
-                  <Button data-testid="signoff-btn" onClick={sign} className="w-full bg-blue-600 hover:bg-blue-700">
+                  <Button data-testid="signoff-btn" onClick={sign} className="w-full bg-navy hover:bg-navy-deep">
                     <ShieldCheck className="h-4 w-4 mr-1.5" /> Record sign-off
                   </Button>
                 </div>
@@ -189,13 +189,13 @@ export default function ReportTab({ patient, insight }) {
         ) : (
           <ul className="mt-2 space-y-2" data-testid="whatsapp-log">
             {whatsappLog.map((w) => (
-              <li key={w.id} className="rounded-md border border-slate-200 p-3">
+              <li key={w.id} className="rounded-xl border border-slate-200 p-3">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded px-2 py-0.5">{w.status}</span>
                   <span className="metric-num text-xs text-slate-500">{w.to} · {new Date(w.at).toLocaleTimeString()} · {w.kind}</span>
                 </div>
                 <p className="text-sm text-slate-700 mt-2">{w.body}</p>
-                {w.attachment && <p className="text-xs text-blue-700 mt-1">Attachment: {w.attachment}</p>}
+                {w.attachment && <p className="text-xs text-navy mt-1">Attachment: {w.attachment}</p>}
               </li>
             ))}
           </ul>

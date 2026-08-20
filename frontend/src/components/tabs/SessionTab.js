@@ -80,14 +80,14 @@ function TelemetryPanel({ patient, insight, onSample }) {
         <Button
           data-testid="telemetry-toggle-btn"
           onClick={() => { setRunning((r) => !r); toast.info(running ? "Telemetry stream paused" : "Telemetry stream connected (simulated)"); }}
-          className={running ? "bg-red-600 hover:bg-red-700" : "bg-blue-600 hover:bg-blue-700"}
+          className={running ? "bg-red-600 hover:bg-red-700" : "bg-navy hover:bg-navy-deep"}
         >
           {running ? <><Pause className="h-4 w-4 mr-1.5" /> Pause stream</> : <><Play className="h-4 w-4 mr-1.5" /> Connect machine</>}
         </Button>
       }
     >
       <div className="flex items-center gap-2 mb-4">
-        <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-2 py-1 rounded border ${running ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-slate-50 text-slate-600 border-slate-200"}`}>
+        <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-2 py-1 rounded-lg border ${running ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-slate-50 text-slate-600 border-slate-200"}`}>
           <Radio className="h-3.5 w-3.5" /> {running ? "Streaming" : "Disconnected"}
         </span>
         <span className="text-xs text-slate-500 metric-num">Device: FRESENIUS-4008S · SN 4008-2291 · elapsed {t.elapsedMin} min</span>
@@ -105,11 +105,11 @@ function TelemetryPanel({ patient, insight, onSample }) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-        <div className="rounded-md border border-slate-200 p-3">
+        <div className="rounded-xl border border-slate-200 p-3">
           <p className="overline">Blood flow in context</p>
           <ContextLine ctx={qbCtx} unit="mL/min" />
         </div>
-        <div className="rounded-md border border-slate-200 p-3">
+        <div className="rounded-xl border border-slate-200 p-3">
           <p className="overline">Venous pressure in context</p>
           <ContextLine ctx={vpCtx} unit="mmHg" />
         </div>
@@ -206,7 +206,7 @@ export default function SessionTab({ patient, insight }) {
               </div>
             </div>
 
-            <div className="mt-6 rounded-md border border-slate-200 bg-slate-50 p-4 space-y-3">
+            <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3">
               <label className="flex items-start gap-3 cursor-pointer">
                 <Checkbox data-testid="check-rx-verified" checked={draft.before.prescriptionVerified} onCheckedChange={(v) => updateDraft(patient, "before", { prescriptionVerified: !!v })} />
                 <span className="text-sm text-slate-700">
@@ -312,9 +312,9 @@ export default function SessionTab({ patient, insight }) {
               </div>
             </div>
 
-            <div className="mt-6 rounded-md border border-blue-200 bg-blue-50 p-4 flex items-start gap-3">
-              <Plug className="h-4 w-4 text-blue-700 mt-0.5" />
-              <p className="text-sm text-blue-900">
+            <div className="mt-6 rounded-xl border border-[#c3dcf7] bg-navy-tint p-4 flex items-start gap-3">
+              <Plug className="h-4 w-4 text-navy mt-0.5" />
+              <p className="text-sm text-navy">
                 Completing this stage populates the Prescription Report for clinician sign-off, PDF generation and patient WhatsApp dispatch.
               </p>
             </div>
@@ -329,7 +329,7 @@ export default function SessionTab({ patient, insight }) {
             { label: "Current venous pressure", value: draft.during.venousPressure, unit: "mmHg", ctx: contextFor(s, "venousPressure", draft.during.venousPressure) },
             { label: "Pre-dialysis weight", value: draft.before.weight, unit: "kg", ctx: contextFor(s, "preWeight", draft.before.weight) },
           ].map((row, i) => (
-            <div key={i} className="rounded-md border border-slate-200 p-4" data-testid={`context-card-${i}`}>
+            <div key={i} className="rounded-xl border border-slate-200 p-4" data-testid={`context-card-${i}`}>
               <p className="overline">{row.label}</p>
               <p className="metric-num text-2xl font-semibold mt-1">
                 {row.value || "—"} <span className="text-xs text-slate-500">{row.unit}</span>
@@ -337,17 +337,17 @@ export default function SessionTab({ patient, insight }) {
               <ContextLine ctx={row.ctx} unit={row.unit} />
             </div>
           ))}
-          <div className="rounded-md border border-slate-200 p-4">
+          <div className="rounded-xl border border-slate-200 p-4">
             <p className="overline">Recent access-related events</p>
             <p className="metric-num text-2xl font-semibold mt-1">{insight.stats.recentAccessEvents}</p>
             <p className="text-xs text-slate-500 mt-1">Cannulation difficulty / infiltration in last 10 sessions</p>
           </div>
-          <div className="rounded-md border border-slate-200 p-4">
+          <div className="rounded-xl border border-slate-200 p-4">
             <p className="overline">Last vascular intervention</p>
             <p className="metric-num text-2xl font-semibold mt-1">{patient.vascular.lastIntervention}</p>
             <p className="text-xs text-slate-500 mt-1">{patient.procedures[0].name}</p>
           </div>
-          <div className="rounded-md border border-amber-200 bg-amber-50 p-4">
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
             <p className="overline text-amber-800 flex items-center gap-1.5"><Activity className="h-3.5 w-3.5" /> Operator attention</p>
             <p className="text-sm text-amber-900 font-semibold mt-1.5">{insight.attention[0].title}</p>
             <p className="text-xs text-amber-800 mt-1">{insight.attention[0].detail}</p>

@@ -10,11 +10,18 @@ import { Checkbox } from "@/components/ui/checkbox";
 const roleHints = {
   operator: { label: "Operator ID", placeholder: "OPR-1041" },
   doctor: { label: "Clinician ID", placeholder: "DOC-0071" },
-  patient: { label: "Registered mobile or Dialyso ID", placeholder: "DUR-PT-00218" },
-  admin: { label: "Administrator ID", placeholder: "ADM-0001" },
+  patient: { label: "Registered mobile or DialyGo ID", placeholder: "DUR-PT-00218" },
+  dialysisadmin: { label: "Dialysis Admin ID", placeholder: "ADM-0002" },
+  techadmin: { label: "Technical Admin ID", placeholder: "ADM-0001" },
 };
 
-const demoIds = { operator: operators.map((o) => o.id), doctor: ["DOC-0071", "DOC-0088"], patient: ["DUR-PT-00218", "DUR-PT-00341"], admin: ["ADM-0001"] };
+const demoIds = {
+  operator: operators.map((o) => o.id),
+  doctor: ["DOC-0071", "DOC-0088"],
+  patient: ["DUR-PT-00218", "DUR-PT-00341"],
+  dialysisadmin: ["ADM-0002"],
+  techadmin: ["ADM-0001"],
+};
 
 export default function Login() {
   const { login } = useApp();
@@ -29,7 +36,7 @@ export default function Login() {
   const submit = (e) => {
     e.preventDefault();
     if (role === "patient" && !otpStage) {
-      if (!id.trim()) return setError("Enter your registered mobile or Dialyso ID.");
+      if (!id.trim()) return setError("Enter your registered mobile or DialyGo ID.");
       setOtpStage(true);
       setError("");
       return;
@@ -42,28 +49,29 @@ export default function Login() {
 
   return (
     <div className="min-h-screen grid lg:grid-cols-[1.05fr_1fr]">
-      <div className="relative hidden lg:block bg-slate-900">
+      <div className="relative hidden lg:block dg-gradient-navy">
         <img
           src="https://images.pexels.com/photos/5619462/pexels-photo-5619462.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
           alt="Dialysis unit"
-          className="absolute inset-0 h-full w-full object-cover opacity-40"
+          className="absolute inset-0 h-full w-full object-cover opacity-30"
         />
+        <div className="absolute inset-0 dg-gradient-navy opacity-80" />
         <div className="relative h-full flex flex-col justify-between p-12">
           <div className="flex items-center gap-3 text-white">
-            <div className="h-10 w-10 rounded bg-blue-600 grid place-items-center"><Activity className="h-5 w-5" /></div>
+            <div className="h-11 w-11 rounded-2xl bg-white grid place-items-center shadow-sm"><Activity className="h-6 w-6 text-navy" /></div>
             <div>
-              <p className="font-head text-xl font-extrabold leading-none">Dialyso</p>
-              <p className="overline text-slate-300">Operator Intelligence &amp; Vascular Assessment</p>
+              <p className="font-head text-2xl font-extrabold leading-none" style={{ color: "#ffffff" }}>Dialy<span style={{ color: "#e48404" }}>Go</span></p>
+              <p className="overline text-white/60 mt-1">Operator Intelligence &amp; Vascular Assessment</p>
             </div>
           </div>
-          <div className="bg-slate-900/90 border border-slate-700 rounded-md p-8 max-w-xl">
-            <p className="overline text-blue-300 mb-3">Phase-I USP</p>
+          <div className="bg-navy-deep/85 border border-white/15 rounded-2xl p-8 max-w-xl backdrop-blur-sm">
+            <p className="overline text-saffron mb-3">Phase-I USP</p>
             <h2 className="font-head text-2xl font-bold text-white leading-snug">
               Before every dialysis session, give the operator a consolidated view of the patient's historical dialysis,
               vascular-access and clinical evidence — so the current procedure is performed with context rather than isolated
               machine readings.
             </h2>
-            <p className="text-sm text-slate-300 mt-4">
+            <p className="text-sm text-white/70 mt-4">
               Rule-based, illustrative, mock-data prototype. Final clinical decisions remain with qualified healthcare professionals.
             </p>
           </div>
@@ -73,13 +81,13 @@ export default function Login() {
       <div className="flex items-center justify-center p-6 sm:p-12 bg-white">
         <form onSubmit={submit} className="w-full max-w-md" data-testid="login-form">
           <div className="flex items-center gap-3 lg:hidden mb-8">
-            <div className="h-9 w-9 rounded bg-blue-600 grid place-items-center text-white"><Activity className="h-5 w-5" /></div>
-            <p className="font-head text-lg font-extrabold">Dialyso</p>
+            <div className="h-10 w-10 rounded-2xl bg-navy grid place-items-center text-white"><Activity className="h-5 w-5" /></div>
+            <p className="font-head text-xl font-extrabold">Dialy<span className="text-saffron">Go</span></p>
           </div>
 
           <p className="overline">Sign in</p>
           <h1 className="font-head text-3xl sm:text-4xl font-extrabold mt-2">Choose your workspace</h1>
-          <p className="text-sm text-slate-600 mt-3">Four role-based experiences. Roles can also be switched from the profile menu for demonstration.</p>
+          <p className="text-sm text-slate-500 mt-3">Five role-based experiences. Roles can also be switched from the profile menu for demonstration.</p>
 
           <div className="grid grid-cols-2 gap-2 mt-6" data-testid="role-selector">
             {Object.values(ROLES).map((r) => (
@@ -87,10 +95,10 @@ export default function Login() {
                 key={r.id}
                 type="button"
                 data-testid={`role-option-${r.id}`}
-                onClick={() => { setRole(r.id); setId(""); setError(""); setOtpStage(false); }}
-                className={`text-left rounded border px-3 py-2.5 transition-colors ${role === r.id ? "border-blue-600 bg-blue-50" : "border-slate-200 hover:border-slate-300"}`}
+                onClick={() => { setRole(r.id); setId(""); setOtp(""); setError(""); setOtpStage(false); }}
+                className={`text-left rounded-xl border px-3 py-2.5 transition-colors ${role === r.id ? "border-navy bg-navy-tint" : "border-slate-200 hover:border-navy/40"}`}
               >
-                <span className="block text-sm font-bold">{r.label}</span>
+                <span className="block text-sm font-bold text-navy">{r.label}</span>
                 <span className="block text-xs text-slate-500 mt-0.5">{r.tagline}</span>
               </button>
             ))}
@@ -111,37 +119,37 @@ export default function Login() {
           <div className="mt-3 flex flex-wrap gap-2">
             {demoIds[role].map((d) => (
               <button key={d} type="button" data-testid={`demo-id-${d}`} onClick={() => { setId(d); setError(""); }}
-                className="text-xs metric-num px-2.5 py-1.5 rounded border border-slate-300 bg-white hover:border-blue-600 hover:text-blue-700 transition-colors">
+                className="text-xs metric-num px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white hover:border-navy hover:text-navy transition-colors">
                 {d}
               </button>
             ))}
           </div>
 
           {role === "patient" && otpStage && (
-            <div className="mt-4 rounded-md border border-blue-200 bg-blue-50 p-4">
-              <p className="overline text-blue-800">Mock OTP verification</p>
-              <p className="text-xs text-blue-900 mt-1">Use OTP <span className="metric-num font-bold">123456</span>. No message is sent in the prototype.</p>
+            <div className="mt-4 rounded-xl border border-[#c3dcf7] bg-navy-tint p-4">
+              <p className="overline text-navy">Mock OTP verification</p>
+              <p className="text-xs text-navy/80 mt-1">Use OTP <span className="metric-num font-bold">123456</span>. No message is sent in the prototype.</p>
               <Input data-testid="login-otp-input" value={otp} onChange={(e) => { setOtp(e.target.value); setError(""); }} placeholder="123456" className="mt-3 metric-num h-11" />
             </div>
           )}
 
-          <div className="mt-5 rounded-md border border-slate-200 p-4">
+          <div className="mt-5 rounded-xl border border-slate-200 p-4 bg-slate-50/60">
             <div className="flex items-start gap-3">
               <Checkbox id="dpdp" data-testid="dpdp-consent-checkbox" checked={consent} onCheckedChange={(v) => { setConsent(!!v); setError(""); }} className="mt-0.5" />
-              <label htmlFor="dpdp" className="text-sm text-slate-700 leading-relaxed cursor-pointer">
-                <span className="font-semibold flex items-center gap-1.5 text-slate-900">
-                  <ShieldCheck className="h-4 w-4 text-blue-600" /> DPDP Act 2023 — data sharing consent &amp; disclaimer
+              <label htmlFor="dpdp" className="text-sm text-slate-600 leading-relaxed cursor-pointer">
+                <span className="font-semibold flex items-center gap-1.5 text-navy">
+                  <ShieldCheck className="h-4 w-4 text-navy" /> DPDP Act 2023 — data sharing consent &amp; disclaimer
                 </span>
                 I consent to personal, medical and clinical data being processed for dialysis care delivery, and I accept that
-                Dialyso Phase-I provides decision support only and does not replace qualified clinical judgement. Access is
+                DialyGo Phase-I provides decision support only and does not replace qualified clinical judgement. Access is
                 logged and auditable.
               </label>
             </div>
           </div>
 
-          {error && <p data-testid="login-error" className="mt-4 text-sm font-medium text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2">{error}</p>}
+          {error && <p data-testid="login-error" className="mt-4 text-sm font-medium text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>}
 
-          <Button data-testid="login-submit-btn" type="submit" className="w-full h-12 mt-6 text-base bg-blue-600 hover:bg-blue-700">
+          <Button data-testid="login-submit-btn" type="submit" className="w-full h-12 mt-6 text-base font-bold bg-saffron hover:bg-saffron-warm text-white rounded-xl">
             {role === "patient" && !otpStage ? "Send mock OTP" : "Enter workspace"} <ChevronRight className="h-4 w-4 ml-1" />
           </Button>
 

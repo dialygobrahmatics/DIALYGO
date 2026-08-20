@@ -1,11 +1,11 @@
 import { ArrowDown, ArrowUp, Minus } from "lucide-react";
 
 export const Panel = ({ title, hint, right, children, testId, className = "" }) => (
-  <section data-testid={testId} className={`bg-white border border-slate-200 rounded-md shadow-sm ${className}`}>
+  <section data-testid={testId} className={`dg-card dg-card-hover ${className}`}>
     <div className="flex items-start justify-between gap-3 px-5 sm:px-6 pt-5">
       <div>
         <h3 className="font-head text-base md:text-lg font-bold">{title}</h3>
-        {hint && <p className="text-xs text-slate-500 mt-0.5">{hint}</p>}
+        {hint && <p className="text-xs text-slate-500 mt-1 leading-relaxed">{hint}</p>}
       </div>
       {right}
     </div>
@@ -14,7 +14,7 @@ export const Panel = ({ title, hint, right, children, testId, className = "" }) 
 );
 
 export const Metric = ({ label, value, unit, sub, testId, tone = "default" }) => {
-  const toneCls = { default: "text-slate-900", alert: "text-red-700", warn: "text-amber-700", ok: "text-emerald-700" }[tone];
+  const toneCls = { default: "text-navy", alert: "text-red-700", warn: "text-amber-700", ok: "text-emerald-700" }[tone];
   return (
     <div data-testid={testId} className="min-w-0">
       <p className="overline truncate">{label}</p>
@@ -70,7 +70,7 @@ export const Field = ({ label, children, hint }) => (
 );
 
 export const EmptyState = ({ text }) => (
-  <div className="border border-dashed border-slate-300 rounded-md p-6 text-center">
+  <div className="dg-dashed p-8 text-center bg-slate-50/60">
     <p className="text-sm text-slate-500">{text}</p>
   </div>
 );

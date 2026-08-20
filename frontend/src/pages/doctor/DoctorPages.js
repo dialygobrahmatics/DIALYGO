@@ -23,7 +23,7 @@ export function DoctorHome() {
   const rows = patients.map((p) => ({ p, insight: buildInsight(p, null) }));
   return (
     <div className="space-y-4">
-      <div className="bg-white border border-slate-200 rounded-md shadow-sm p-6">
+      <div className="dg-card p-6">
         <p className="overline">Clinical review · {new Date().toDateString()}</p>
         <h1 className="font-head text-3xl font-extrabold mt-1">Doctor Console</h1>
         <p className="text-sm text-slate-600 mt-3 max-w-3xl">
@@ -31,10 +31,10 @@ export function DoctorHome() {
           core-engine prescription report.
         </p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5">
-          <div className="rounded border border-slate-200 px-4 py-3"><p className="overline">Patients under review</p><p className="metric-num text-2xl font-semibold mt-1">{patients.length}</p></div>
-          <div className="rounded border border-amber-200 bg-amber-50 px-4 py-3"><p className="overline text-amber-800">Reports awaiting sign-off</p><p className="metric-num text-2xl font-semibold mt-1 text-amber-800" data-testid="doc-stat-pending">{patients.length}</p></div>
-          <div className="rounded border border-red-200 bg-red-50 px-4 py-3"><p className="overline text-red-700">Access risk high</p><p className="metric-num text-2xl font-semibold mt-1 text-red-700">{rows.filter((r) => r.insight.accessStatus.level === "high").length}</p></div>
-          <div className="rounded border border-slate-200 px-4 py-3"><p className="overline">Adequacy below target</p><p className="metric-num text-2xl font-semibold mt-1">{patients.filter((p) => p.labs[0].ktv < 1.2).length}</p></div>
+          <div className="dg-stat px-4 py-3"><p className="overline">Patients under review</p><p className="metric-num text-2xl font-semibold mt-1">{patients.length}</p></div>
+          <div className="dg-stat border-amber-200 bg-amber-50 px-4 py-3"><p className="overline text-amber-800">Reports awaiting sign-off</p><p className="metric-num text-2xl font-semibold mt-1 text-amber-800" data-testid="doc-stat-pending">{patients.length}</p></div>
+          <div className="dg-stat border-red-200 bg-red-50 px-4 py-3"><p className="overline text-red-700">Access risk high</p><p className="metric-num text-2xl font-semibold mt-1 text-red-700">{rows.filter((r) => r.insight.accessStatus.level === "high").length}</p></div>
+          <div className="dg-stat px-4 py-3"><p className="overline">Adequacy below target</p><p className="metric-num text-2xl font-semibold mt-1">{patients.filter((p) => p.labs[0].ktv < 1.2).length}</p></div>
         </div>
       </div>
       <Panel title="Assigned patients" hint="Open Patient 360° for the consolidated record" testId="doctor-worklist">
@@ -80,7 +80,7 @@ export function DoctorPatient360() {
           <Button variant="outline" data-testid="doc-goto-clinical" onClick={() => navigate("/doctor/clinical-history")}>Clinical history</Button>
           <Button variant="outline" data-testid="doc-goto-dialysis" onClick={() => navigate("/doctor/dialysis-history")}>Dialysis history</Button>
           <Button variant="outline" data-testid="doc-goto-vascular" onClick={() => navigate("/doctor/vascular")}>Vascular access</Button>
-          <Button className="bg-blue-600 hover:bg-blue-700" data-testid="doc-goto-core" onClick={() => navigate("/doctor/core-analysis")}>Core analysis</Button>
+          <Button className="bg-navy hover:bg-navy-deep" data-testid="doc-goto-core" onClick={() => navigate("/doctor/core-analysis")}>Core analysis</Button>
         </div>
       </Panel>
       <OverviewTab patient={patient} insight={insight} onOpenTab={(t) => navigate(t === "vascular" ? "/doctor/vascular" : "/doctor/clinical-history")} />
@@ -97,7 +97,7 @@ export function DoctorClinicalHistory() {
       <Panel title="Previous visits & clinician opinions" hint="Longitudinal clinical record" testId="clinical-visits-panel">
         <ul className="space-y-3">
           {patient.notes.map((n, i) => (
-            <li key={i} className="border-l-2 border-blue-600 pl-4 py-1">
+            <li key={i} className="border-l-2 border-saffron pl-4 py-1">
               <p className="metric-num text-xs text-slate-500">{n.date} · {n.by}</p>
               <p className="text-sm text-slate-700 mt-1">{n.text}</p>
             </li>
@@ -125,7 +125,7 @@ export function DoctorDialysisHistory() {
                 <XAxis dataKey="name" tick={{ fontSize: 10 }} stroke="#94a3b8" />
                 <YAxis tick={{ fontSize: 10 }} stroke="#94a3b8" />
                 <Tooltip contentStyle={{ fontSize: 12, borderRadius: 6 }} />
-                <Line type="monotone" dataKey="qb" stroke="#2563eb" strokeWidth={2} dot={false} name="Qb" />
+                <Line type="monotone" dataKey="qb" stroke="#0a3d62" strokeWidth={2} dot={false} name="Qb" />
                 <Line type="monotone" dataKey="vp" stroke="#dc2626" strokeWidth={2} dot={false} name="Venous P" />
               </LineChart>
             </ResponsiveContainer>
@@ -179,7 +179,7 @@ export function DoctorCoreAnalysis() {
               { label: "Achieved blood flow trend", t: insight.stats.qbTrend },
               { label: "Dialysis adequacy (Kt/V) trend", t: insight.stats.ktvTrend },
             ].map((r) => (
-              <div key={r.label} className="flex items-center justify-between rounded border border-slate-200 px-3 py-2.5">
+              <div key={r.label} className="flex items-center justify-between dg-stat px-3 py-2.5">
                 <span className="text-sm text-slate-700">{r.label}</span>
                 <TrendBadge direction={r.t.direction} pct={r.t.pct} />
               </div>
@@ -196,7 +196,7 @@ export function DoctorCoreAnalysis() {
               { g: "Haemoglobin ≥ 10 g/dL", ok: patient.labs[0].hb >= 10, note: `Current ${patient.labs[0].hb} g/dL` },
               { g: "Ultrafiltration targets met", ok: insight.stats.ufShortfall < 3, note: `${insight.stats.ufShortfall} shortfall session(s) in last 10` },
             ].map((r) => (
-              <div key={r.g} className={`rounded border p-3 ${levelColor(r.ok ? "low" : "moderate")}`}>
+              <div key={r.g} className={`rounded-lg border p-3 ${levelColor(r.ok ? "low" : "moderate")}`}>
                 <p className="text-sm font-bold">{r.ok ? "Objective achieved" : "Objective not achieved"} — {r.g}</p>
                 <p className="text-xs mt-1 opacity-90">{r.note}</p>
               </div>
@@ -248,7 +248,7 @@ export function DoctorClinicalReview() {
     <div className="space-y-4">
       <PatientBanner patient={patient} insight={insight} compact />
       <Panel title="Clinical Review & Sign-Off" hint="Mandatory before any recommendation is applied at the machine" testId="clinical-review-panel">
-        <div className={`rounded-md border p-4 ${status === "approved" ? levelColor("low") : status === "returned" ? levelColor("moderate") : levelColor("info")}`}>
+        <div className={`rounded-xl border p-4 ${status === "approved" ? levelColor("low") : status === "returned" ? levelColor("moderate") : levelColor("info")}`}>
           <p className="overline">Review status</p>
           <p className="text-sm font-bold mt-1" data-testid="review-status">
             {status === "approved" ? "Approved — reviewed by clinician" : status === "returned" ? "Returned for review" : "Pending clinician review"}

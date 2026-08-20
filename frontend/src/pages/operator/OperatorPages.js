@@ -32,14 +32,14 @@ const workflow = [
 ];
 
 export const WorkflowStrip = ({ active }) => (
-  <div className="bg-white border border-slate-200 rounded-md p-4 overflow-x-auto" data-testid="workflow-strip">
+  <div className="dg-card p-4 overflow-x-auto" data-testid="workflow-strip">
     <p className="overline mb-3">Operator pre-session workflow</p>
     <ol className="flex items-center gap-2 min-w-max">
       {workflow.map((w, i) => (
         <li key={w} className="flex items-center gap-2">
           <span
-            className={`text-xs font-semibold px-2.5 py-1.5 rounded border whitespace-nowrap ${
-              i === active ? "bg-blue-600 text-white border-blue-600" : i < active ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-slate-50 text-slate-500 border-slate-200"
+            className={`text-xs font-semibold px-2.5 py-1.5 rounded-lg border whitespace-nowrap ${
+              i === active ? "bg-navy text-white border-navy" : i < active ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-slate-50 text-slate-500 border-slate-200"
             }`}
           >
             {i + 1}. {w}
@@ -59,7 +59,7 @@ export function OperatorHome() {
 
   return (
     <div className="space-y-4">
-      <div className="bg-white border border-slate-200 rounded-md shadow-sm p-6">
+      <div className="dg-card p-6">
         <p className="overline">Today · {new Date().toDateString()}</p>
         <h1 className="font-head text-3xl font-extrabold mt-1">Operator Console</h1>
         <p className="text-sm text-slate-600 mt-3 max-w-3xl">
@@ -67,10 +67,10 @@ export function OperatorHome() {
           evidence — so the current procedure is performed with context rather than isolated machine readings.
         </p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5">
-          <div className="rounded border border-slate-200 px-4 py-3"><p className="overline">Scheduled today</p><p className="metric-num text-2xl font-semibold mt-1" data-testid="op-stat-scheduled">{patients.length}</p></div>
-          <div className="rounded border border-red-200 bg-red-50 px-4 py-3"><p className="overline text-red-700">Patients with high attention</p><p className="metric-num text-2xl font-semibold mt-1 text-red-700" data-testid="op-stat-attention">{highTotal}</p></div>
-          <div className="rounded border border-amber-200 bg-amber-50 px-4 py-3"><p className="overline text-amber-800">Awaiting sign-off</p><p className="metric-num text-2xl font-semibold mt-1 text-amber-800">1</p></div>
-          <div className="rounded border border-slate-200 px-4 py-3"><p className="overline">Machines in session</p><p className="metric-num text-2xl font-semibold mt-1">{machineFleet.filter((m) => m.status === "In session").length}</p></div>
+          <div className="dg-stat px-4 py-3"><p className="overline">Scheduled today</p><p className="metric-num text-2xl font-semibold mt-1" data-testid="op-stat-scheduled">{patients.length}</p></div>
+          <div className="dg-stat border-red-200 bg-red-50 px-4 py-3"><p className="overline text-red-700">Patients with high attention</p><p className="metric-num text-2xl font-semibold mt-1 text-red-700" data-testid="op-stat-attention">{highTotal}</p></div>
+          <div className="dg-stat border-amber-200 bg-amber-50 px-4 py-3"><p className="overline text-amber-800">Awaiting sign-off</p><p className="metric-num text-2xl font-semibold mt-1 text-amber-800">1</p></div>
+          <div className="dg-stat px-4 py-3"><p className="overline">Machines in session</p><p className="metric-num text-2xl font-semibold mt-1">{machineFleet.filter((m) => m.status === "In session").length}</p></div>
         </div>
       </div>
 
@@ -89,7 +89,7 @@ export function OperatorPatientSearch() {
   return (
     <div className="space-y-4">
       <WorkflowStrip active={0} />
-      <Panel title="Patient Search" hint="Search by name, Dialyso ID or UHID from the top bar, or select from the unit list" testId="patient-search-panel">
+      <Panel title="Patient Search" hint="Search by name, DialyGo ID or UHID from the top bar, or select from the unit list" testId="patient-search-panel">
         <PatientPickerList onPick={(id) => { setSelectedPatientId(id); navigate("/operator/pre-session"); }} testId="search-patient-list" />
       </Panel>
     </div>
@@ -145,11 +145,11 @@ export function OperatorPreSession() {
             <Metric label="Last pre-session BP" value={last.preBP} unit="mmHg" />
           </div>
           <div className="mt-4 space-y-3">
-            <div className="rounded border border-slate-200 p-3">
+            <div className="rounded-lg border border-slate-200 p-3">
               <p className="overline">Pre-session weight baseline</p>
               <ContextLine ctx={contextFor(s, "preWeight", last.preWeight)} unit="kg" />
             </div>
-            <div className="rounded border border-slate-200 p-3">
+            <div className="rounded-lg border border-slate-200 p-3">
               <p className="overline">Achieved ultrafiltration baseline</p>
               <ContextLine ctx={contextFor(s, "ufAchieved", last.ufAchieved)} unit="L" />
             </div>
@@ -159,7 +159,7 @@ export function OperatorPreSession() {
         <Panel title="Cannulation record — early-warning indicator" hint="Attempts and infiltration events across the last 10 sessions" testId="cannulation-panel">
           <div className="space-y-2">
             {s.slice(-10).reverse().map((x) => (
-              <div key={x.sessionNo} className={`flex items-center justify-between rounded border px-3 py-2 text-sm ${x.infiltration || x.cannulationAttempts > 1 ? "border-amber-200 bg-amber-50" : "border-slate-200"}`}>
+              <div key={x.sessionNo} className={`flex items-center justify-between rounded-lg border px-3 py-2 text-sm ${x.infiltration || x.cannulationAttempts > 1 ? "border-amber-200 bg-amber-50" : "border-slate-200"}`}>
                 <span className="metric-num text-xs text-slate-600">#{x.sessionNo} · {x.date}</span>
                 <span className="text-xs font-semibold">
                   {x.cannulationAttempts} attempt{x.cannulationAttempts > 1 ? "s" : ""}{x.infiltration ? " · infiltration" : ""}
@@ -176,7 +176,7 @@ export function OperatorPreSession() {
       <Panel title="Pre-session checklist" hint="Confirm the consolidated evidence has been reviewed before connection" testId="pre-session-checklist">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {checklist.map((c, i) => (
-            <label key={i} className="flex items-start gap-3 rounded border border-slate-200 px-3 py-2.5 cursor-pointer hover:border-slate-300 transition-colors">
+            <label key={i} className="flex items-start gap-3 dg-stat px-3 py-2.5 cursor-pointer hover:border-slate-300 transition-colors">
               <Checkbox data-testid={`checklist-item-${i}`} checked={!!checks[i]} onCheckedChange={(v) => setChecks((p) => ({ ...p, [i]: !!v }))} />
               <span className="text-sm text-slate-700">{c}</span>
             </label>
@@ -185,7 +185,7 @@ export function OperatorPreSession() {
         <div className="flex flex-wrap gap-3 mt-5">
           <Button data-testid="goto-history-btn" variant="outline" onClick={() => navigate("/operator/history")}>Review patient history</Button>
           <Button data-testid="goto-vascular-btn" variant="outline" onClick={() => navigate("/operator/vascular")}>Review vascular access</Button>
-          <Button data-testid="goto-session-btn" className="bg-blue-600 hover:bg-blue-700" onClick={() => navigate("/operator/current-session")}>Enter pre-session parameters</Button>
+          <Button data-testid="goto-session-btn" className="bg-saffron hover:bg-saffron-warm text-white font-bold" onClick={() => navigate("/operator/current-session")}>Enter pre-session parameters</Button>
         </div>
       </Panel>
 
@@ -260,12 +260,12 @@ export function OperatorMachineInsights() {
         title="Machine Insights"
         hint="Machine-facing recommendations are released to the operator only after clinician review. The operator does not independently control the machine."
         testId="machine-insights-panel"
-        right={<span className={`text-xs font-bold px-2 py-1 rounded border ${approved ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-amber-50 text-amber-800 border-amber-200"}`}>
+        right={<span className={`text-xs font-bold px-2 py-1 rounded-lg border ${approved ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-amber-50 text-amber-800 border-amber-200"}`}>
           {approved ? "Clinician approved" : "Awaiting clinician sign-off"}
         </span>}
       >
         {approved ? (
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 rounded-md border border-emerald-200 bg-emerald-50 p-4" data-testid="approved-settings">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4" data-testid="approved-settings">
             <Metric label="Blood flow" value={insight.tuning.bloodFlow} unit="mL/min" />
             <Metric label="Dialysate flow" value={insight.tuning.dialysateFlow} unit="mL/min" />
             <Metric label="Duration" value={insight.tuning.durationMin} unit="min" />
@@ -273,7 +273,7 @@ export function OperatorMachineInsights() {
             <Metric label="UF rate" value={insight.tuning.ufRateMlKgHr} unit="mL/kg/hr" />
           </div>
         ) : (
-          <div className="rounded-md border border-amber-200 bg-amber-50 p-4" data-testid="machine-insights-locked">
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4" data-testid="machine-insights-locked">
             <p className="text-sm font-bold text-amber-900">Recommendations withheld until clinician sign-off is recorded</p>
             <p className="text-sm text-amber-800 mt-1">
               Open Session Reports, review the prescription report and obtain clinician sign-off. No recommendation may be
@@ -292,7 +292,7 @@ export function OperatorMachineInsights() {
                   <td className="metric-num py-2.5 pr-4">{m.id}</td>
                   <td className="py-2.5 pr-4">{m.model}</td>
                   <td className="py-2.5 pr-4">{m.unit}</td>
-                  <td className="py-2.5 pr-4"><span className={`text-xs font-bold px-2 py-0.5 rounded border ${m.status === "In session" ? levelColor("info") : m.status === "Maintenance" ? levelColor("moderate") : levelColor("low")}`}>{m.status}</span></td>
+                  <td className="py-2.5 pr-4"><span className={`text-xs font-bold px-2 py-0.5 rounded-lg border ${m.status === "In session" ? levelColor("info") : m.status === "Maintenance" ? levelColor("moderate") : levelColor("low")}`}>{m.status}</span></td>
                   <td className="metric-num py-2.5 pr-4">{m.uptime}</td>
                   <td className="metric-num py-2.5 pr-4">{m.alarms24h}</td>
                   <td className="metric-num py-2.5 pr-4">{m.lastService}</td>
@@ -317,8 +317,8 @@ export function OperatorProcedureSupport() {
         <Panel title="Plan Now — during this session" hint="Decision-support prompts for review, not instructions" testId="procedure-plan-now">
           <ul className="space-y-2" data-testid="support-plan-now">
             {insight.planNow.map((p, i) => (
-              <li key={i} className="flex gap-2.5 text-sm text-slate-700 rounded border border-slate-200 px-3 py-2.5">
-                <ListChecks className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />{p}
+              <li key={i} className="flex gap-2.5 text-sm text-slate-700 dg-stat px-3 py-2.5">
+                <ListChecks className="h-4 w-4 text-navy mt-0.5 shrink-0" />{p}
               </li>
             ))}
           </ul>
@@ -326,7 +326,7 @@ export function OperatorProcedureSupport() {
         <Panel title="Plan Next — upcoming sessions" hint="Preparation and follow-up items" testId="procedure-plan-next">
           <ul className="space-y-2" data-testid="support-plan-next">
             {insight.planNext.map((p, i) => (
-              <li key={i} className="flex gap-2.5 text-sm text-slate-700 rounded border border-slate-200 px-3 py-2.5">
+              <li key={i} className="flex gap-2.5 text-sm text-slate-700 dg-stat px-3 py-2.5">
                 <CalendarClock className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />{p}
               </li>
             ))}
@@ -335,7 +335,7 @@ export function OperatorProcedureSupport() {
         <Panel title="Risk flags to watch" hint="Derived from history, access records and laboratory data only" testId="procedure-risk-flags">
           <div className="space-y-3">
             {insight.riskFlags.map((f, i) => (
-              <div key={i} className={`rounded border p-3 ${levelColor(f.level)}`}>
+              <div key={i} className={`rounded-lg border p-3 ${levelColor(f.level)}`}>
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-sm font-bold">{f.name}</p>
                   <span className="text-xs font-bold uppercase">{f.level}</span>
@@ -347,12 +347,12 @@ export function OperatorProcedureSupport() {
         </Panel>
         <Panel title="Escalation & governance" hint="Who to involve and when" testId="procedure-escalation">
           <ul className="space-y-3 text-sm text-slate-700">
-            <li className="flex gap-2.5"><ShieldCheck className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" /> Any change to prescribed parameters requires clinician sign-off in the prescription report before it is applied.</li>
+            <li className="flex gap-2.5"><ShieldCheck className="h-4 w-4 text-navy mt-0.5 shrink-0" /> Any change to prescribed parameters requires clinician sign-off in the prescription report before it is applied.</li>
             <li className="flex gap-2.5"><AlertTriangle className="h-4 w-4 text-red-600 mt-0.5 shrink-0" /> Escalate immediately for symptomatic hypotension, suspected access rupture, prolonged bleeding or new access-site infection.</li>
             <li className="flex gap-2.5"><Gauge className="h-4 w-4 text-slate-600 mt-0.5 shrink-0" /> Persistent high venous pressure or repeated cannulation failure — inform the nephrologist and record in the session log.</li>
             <li className="flex gap-2.5"><Activity className="h-4 w-4 text-slate-600 mt-0.5 shrink-0" /> Operators do not adjust machine settings autonomously; recommendations are decision support only.</li>
           </ul>
-          <div className="mt-5 rounded-md border border-slate-200 bg-slate-50 p-4">
+          <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-4">
             <p className="overline">Access status objective</p>
             <p className="text-sm font-semibold mt-1.5">{insight.accessStatus.objective}</p>
             <p className="text-sm text-slate-600 mt-1">{insight.accessStatus.summary}</p>

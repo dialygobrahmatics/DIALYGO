@@ -7,7 +7,7 @@ const groups = ["Data capture", "Integration", "Analytics", "Imaging", "Access"]
 export default function Roadmap() {
   return (
     <div className="space-y-4">
-      <div className="bg-white border border-slate-200 rounded-md shadow-sm p-6">
+      <div className="dg-card p-6">
         <p className="overline">Beyond Phase-I</p>
         <h1 className="font-head text-3xl sm:text-4xl font-extrabold mt-1">Future Roadmap</h1>
         <p className="text-sm text-slate-600 mt-3 max-w-3xl">
@@ -15,7 +15,7 @@ export default function Roadmap() {
           mock-data driven, with all clinical decisions remaining with qualified healthcare professionals.
         </p>
         <p className="text-sm text-slate-600 mt-2 max-w-3xl">
-          Genomic or hereditary personalisation is out of scope for Dialyso and is not on this roadmap.
+          Genomic or hereditary personalisation is out of scope for DialyGo and is not on this roadmap.
         </p>
       </div>
 
@@ -26,7 +26,7 @@ export default function Roadmap() {
           <Panel key={g} title={g} hint="Future Release – Not Available in Phase I" testId={`roadmap-group-${g.toLowerCase().replace(/\s/g, "-")}`}>
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
               {items.map((r) => (
-                <div key={r.title} className="border border-dashed border-slate-300 rounded-md p-4 bg-slate-50" data-testid={`roadmap-item-${r.title.toLowerCase().replace(/[^a-z]+/g, "-")}`}>
+                <div key={r.title} className="dg-dashed p-5 bg-slate-50/60" data-testid={`roadmap-item-${r.title.toLowerCase().replace(/[^a-z]+/g, "-")}`}>
                   <div className="flex items-start gap-2.5">
                     <Rocket className="h-4 w-4 text-slate-500 mt-0.5 shrink-0" />
                     <div>

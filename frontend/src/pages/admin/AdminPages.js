@@ -8,7 +8,6 @@ import { buildInsight, levelColor } from "@/lib/engine";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-
 const Table = ({ cols, rows, testId }) => (
   <div className="overflow-x-auto">
     <table className="w-full text-sm" data-testid={testId}>
@@ -24,21 +23,58 @@ const Table = ({ cols, rows, testId }) => (
   </div>
 );
 
-const Badge = ({ text, level }) => <span className={`text-xs font-bold px-2 py-0.5 rounded border ${levelColor(level)}`}>{text}</span>;
+const Badge = ({ text, level }) => <span className={`text-xs font-bold px-2 py-0.5 rounded-lg border ${levelColor(level)}`}>{text}</span>;
+
+export function DialysisAdminHome() {
+  const highRisk = patients.filter((p) => buildInsight(p, null).accessStatus.level === "high").length;
+  return (
+    <div className="space-y-4">
+      <div className="dg-card p-6">
+        <p className="overline">Clinical unit administration</p>
+        <h1 className="font-head text-3xl font-extrabold mt-1">Dialysis Admin Console</h1>
+        <p className="text-sm text-slate-500 mt-3 max-w-3xl">Oversee the dialysis service: patient roster, clinician and operator coverage, historical evidence completeness and report governance. Mock data only.</p>
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-5">
+          <div className="dg-stat px-4 py-3"><p className="overline">Patients</p><p className="metric-num text-2xl font-semibold mt-1" data-testid="dialysisadmin-stat-patients">{patients.length}</p></div>
+          <div className="dg-stat px-4 py-3"><p className="overline">Nephrologists</p><p className="metric-num text-2xl font-semibold mt-1">{doctorsDirectory.length}</p></div>
+          <div className="dg-stat px-4 py-3"><p className="overline">Operators on roster</p><p className="metric-num text-2xl font-semibold mt-1">{operatorsDirectory.length}</p></div>
+          <div className="dg-stat px-4 py-3 border-red-200 bg-red-50"><p className="overline text-red-700">Access risk high</p><p className="metric-num text-2xl font-semibold mt-1 text-red-700">{highRisk}</p></div>
+          <div className="dg-stat px-4 py-3 border-amber-200 bg-amber-50"><p className="overline text-amber-800">Reports pending sign-off</p><p className="metric-num text-2xl font-semibold mt-1 text-amber-800">2</p></div>
+        </div>
+      </div>
+      <Panel title="Clinical activity" hint="Care-related actions across the unit (mock)" testId="dialysisadmin-activity-panel">
+        <Table testId="dialysisadmin-activity-table" cols={["Time", "Actor", "Action"]} rows={auditActivity.filter((a) => !a.actor.startsWith("ADM")).map((a) => [<span className="metric-num text-xs">{a.at}</span>, <span className="metric-num text-xs">{a.actor}</span>, a.action])} />
+      </Panel>
+    </div>
+  );
+}
+
+export function ClinicalGovernance() {
+  return (
+    <Panel title="Clinical Governance" hint="Consent, review and safety rules enforced by the Phase-I prototype" testId="admin-governance-panel">
+      <ul className="space-y-3 text-sm text-slate-700">
+        <li className="flex gap-2.5"><ShieldCheck className="h-4 w-4 text-navy mt-0.5 shrink-0" /> DPDP Act 2023 consent is captured at login and in the patient profile; access is logged and auditable.</li>
+        <li className="flex gap-2.5"><Users className="h-4 w-4 text-slate-600 mt-0.5 shrink-0" /> Role-based modules: patient, doctor, operator, dialysis admin and technical admin each see only their own workspace.</li>
+        <li className="flex gap-2.5"><Activity className="h-4 w-4 text-slate-600 mt-0.5 shrink-0" /> No autonomous machine control; every recommendation requires clinician sign-off before it reaches the operator.</li>
+        <li className="flex gap-2.5"><Database className="h-4 w-4 text-slate-600 mt-0.5 shrink-0" /> No hereditary or gene-level data is captured, stored or used anywhere in DialyGo.</li>
+        <li className="flex gap-2.5"><SettingsIcon className="h-4 w-4 text-slate-600 mt-0.5 shrink-0" /> Phase-I uses synthetic mock data only; the core engine is rule-based and illustrative.</li>
+      </ul>
+    </Panel>
+  );
+}
 
 export function AdminHome() {
   return (
     <div className="space-y-4">
-      <div className="bg-white border border-slate-200 rounded-md shadow-sm p-6">
-        <p className="overline">Platform overview</p>
-        <h1 className="font-head text-3xl font-extrabold mt-1">Admin Console</h1>
-        <p className="text-sm text-slate-600 mt-3 max-w-3xl">Manage roles, patient records, historical data, ingestion and integration status for the Dialyso Phase-I prototype. All data shown is mock data.</p>
+      <div className="dg-card p-6">
+        <p className="overline">Platform &amp; systems</p>
+        <h1 className="font-head text-3xl font-extrabold mt-1">Technical Admin Console</h1>
+        <p className="text-sm text-slate-500 mt-3 max-w-3xl">Manage users and roles, monitor data ingestion and integration interfaces, device fleet telemetry and platform settings for the DialyGo Phase-I prototype. All data shown is mock data.</p>
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-5">
-          <div className="rounded border border-slate-200 px-4 py-3"><p className="overline">Users</p><p className="metric-num text-2xl font-semibold mt-1" data-testid="admin-stat-users">{platformUsers.length}</p></div>
-          <div className="rounded border border-slate-200 px-4 py-3"><p className="overline">Patients</p><p className="metric-num text-2xl font-semibold mt-1">{patients.length}</p></div>
-          <div className="rounded border border-slate-200 px-4 py-3"><p className="overline">Doctors</p><p className="metric-num text-2xl font-semibold mt-1">{doctorsDirectory.length}</p></div>
-          <div className="rounded border border-slate-200 px-4 py-3"><p className="overline">Operators</p><p className="metric-num text-2xl font-semibold mt-1">{operatorsDirectory.length}</p></div>
-          <div className="rounded border border-amber-200 bg-amber-50 px-4 py-3"><p className="overline text-amber-800">Ingestion running</p><p className="metric-num text-2xl font-semibold mt-1 text-amber-800">{ingestionJobs.filter((j) => j.status === "Running").length}</p></div>
+          <div className="dg-stat px-4 py-3"><p className="overline">Users</p><p className="metric-num text-2xl font-semibold mt-1" data-testid="admin-stat-users">{platformUsers.length}</p></div>
+          <div className="dg-stat px-4 py-3"><p className="overline">Patients</p><p className="metric-num text-2xl font-semibold mt-1">{patients.length}</p></div>
+          <div className="dg-stat px-4 py-3"><p className="overline">Machines</p><p className="metric-num text-2xl font-semibold mt-1">{machineFleet.length}</p></div>
+          <div className="dg-stat px-4 py-3"><p className="overline">Integrations live</p><p className="metric-num text-2xl font-semibold mt-1">{integrations.filter((i) => i.state !== "Future release").length}</p></div>
+          <div className="dg-stat px-4 py-3 border-amber-200 bg-amber-50"><p className="overline text-amber-800">Ingestion running</p><p className="metric-num text-2xl font-semibold mt-1 text-amber-800">{ingestionJobs.filter((j) => j.status === "Running").length}</p></div>
         </div>
       </div>
       <Panel title="Application activity" hint="Audit trail of access and actions (mock)" testId="admin-activity-panel">
@@ -76,7 +112,7 @@ export function AdminPatients() {
     <Panel title="Patients" hint="Patient records available on the platform" testId="admin-patients-panel">
       <Table
         testId="admin-patients-table"
-        cols={["Dialyso ID", "UHID", "Name", "Age/Gender", "Diagnosis", "Access", "Sessions", "Access risk"]}
+        cols={["DialyGo ID", "UHID", "Name", "Age/Gender", "Diagnosis", "Access", "Sessions", "Access risk"]}
         rows={patients.map((p) => {
           const ins = buildInsight(p, null);
           return [
@@ -160,7 +196,7 @@ export function AdminIntegration() {
               <div>
                 <p className="text-sm font-bold">{i.name}</p>
                 <p className="text-xs text-slate-600 mt-1">{i.detail}</p>
-                <span className={`inline-block text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border mt-3 ${levelColor(i.state === "Future release" ? "moderate" : "info")}`}>{i.state}</span>
+                <span className={`inline-block text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-lg border mt-3 ${levelColor(i.state === "Future release" ? "moderate" : "info")}`}>{i.state}</span>
               </div>
             </div>
           </div>
@@ -263,7 +299,7 @@ export function AdminSettings() {
           {rows.map((r) => {
             const locked = r.phase !== "Phase-I";
             return (
-              <div key={r.key} className="flex items-center justify-between rounded border border-slate-200 px-4 py-3">
+              <div key={r.key} className="flex items-center justify-between dg-stat px-4 py-3">
                 <div>
                   <p className="text-sm font-semibold flex items-center gap-2">{locked && <Lock className="h-3.5 w-3.5 text-slate-400" />}{r.label}</p>
                   <p className="text-xs text-slate-500 mt-0.5">{locked ? "Future Release – Not Available in Phase I" : "Available in Phase I"}</p>
@@ -279,12 +315,12 @@ export function AdminSettings() {
           })}
         </div>
       </Panel>
-      <Panel title="Governance & compliance" testId="admin-governance-panel">
+      <Panel title="Governance & compliance" testId="admin-tech-governance-panel">
         <ul className="space-y-3 text-sm text-slate-700">
-          <li className="flex gap-2.5"><ShieldCheck className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" /> DPDP Act 2023 consent is captured at login and in the patient profile; access is logged and auditable.</li>
-          <li className="flex gap-2.5"><Users className="h-4 w-4 text-slate-600 mt-0.5 shrink-0" /> Role-based modules: patient, doctor, operator and admin see only their own workspace.</li>
+          <li className="flex gap-2.5"><ShieldCheck className="h-4 w-4 text-navy mt-0.5 shrink-0" /> DPDP Act 2023 consent is captured at login and in the patient profile; access is logged and auditable.</li>
+          <li className="flex gap-2.5"><Users className="h-4 w-4 text-slate-600 mt-0.5 shrink-0" /> Role-based modules: patient, doctor, operator, dialysis admin and technical admin see only their own workspace.</li>
           <li className="flex gap-2.5"><Activity className="h-4 w-4 text-slate-600 mt-0.5 shrink-0" /> No autonomous machine control; every recommendation requires clinician sign-off.</li>
-          <li className="flex gap-2.5"><Database className="h-4 w-4 text-slate-600 mt-0.5 shrink-0" /> No hereditary or gene-level data is captured, stored or used anywhere in Dialyso.</li>
+          <li className="flex gap-2.5"><Database className="h-4 w-4 text-slate-600 mt-0.5 shrink-0" /> No hereditary or gene-level data is captured, stored or used anywhere in DialyGo.</li>
           <li className="flex gap-2.5"><SettingsIcon className="h-4 w-4 text-slate-600 mt-0.5 shrink-0" /> Phase-I uses synthetic mock data only.</li>
         </ul>
       </Panel>

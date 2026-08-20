@@ -1,4 +1,4 @@
-# Dialyso — Dialysis Procedure Operator Intelligence & Vascular Assessment (Phase-I prototype)
+# DialyGo — Dialysis Procedure Operator Intelligence & Vascular Assessment (Phase-I prototype)
 
 ## Phase-I USP
 "Before every dialysis session, give the operator a consolidated view of the patient's historical dialysis, vascular-access
@@ -14,7 +14,7 @@ scope and is not captured, displayed or on the roadmap.
 
 ## Architecture
 - React 19 SPA (frontend-only, no backend). Tailwind + shadcn/ui, recharts, sonner, react-router 7.
-- Layout: persistent left sidebar (Dialyso brand, role modules, active highlight, collapsible, mobile sheet) + top bar
+- Layout: persistent left sidebar (DialyGo brand, role modules, active highlight, collapsible, mobile sheet) + top bar
   (home icon, breadcrumb, patient search, notifications, profile menu with demo role switcher and logout) + content area.
 - `src/config/nav.js` — per-role module lists and breadcrumbs
 - `src/components/layout/AppLayout.js` — shell chrome
@@ -37,7 +37,8 @@ scope and is not captured, displayed or on the roadmap.
 
 ## Implemented
 - 2026-06-19 — Phase-I MVP: DPDP login, worklist, pre-dialysis dashboard, vascular timeline, historical evidence, session capture with historical-range context, simulated telemetry, rule-based prescription report, sign-off gate, MOCKED WhatsApp dispatch. Verified 18/18.
-- 2026-06-20 — Restructure: role-based sidebar/topbar SaaS shell, four role workspaces (35+ screens), role isolation guards, demo role switcher, topbar search & notifications, operator 12-step pre-session workflow with checklist and cannulation early-warning panel, visible core-engine run, doctor clinical review with approve/return propagating to operator machine insights, patient portal with mock OTP/consent/upload, 11 admin modules, Future Roadmap page, compliance wording clean-up. Verified 26/27 by testing agent; search-popover UX and wording findings fixed afterwards.
+- 2026-06-20 — Role-based restructure: sidebar/topbar SaaS shell, four role workspaces, role isolation, demo role switcher, operator 12-step pre-session workflow, visible core-engine run, doctor clinical review approve/return propagating to operator machine insights, patient portal, admin modules, Future Roadmap. Verified 26/27.
+- 2026-06-20 (later) — **DialyGo rebrand + visual system**: app renamed DialyGo → DialyGo; theme aligned to dialygo.in (navy #0A3D62 sidebar/gradients and headings, saffron #E48404 primary CTAs, sky tint #DBEAFE chips, dashed evidence grids, 14px rounded soft-shadow cards, Plus Jakarta Sans headings + IBM Plex Sans/Mono data). Admin split into **Dialysis Admin** (`/clinical-admin/*`: patients, doctors, operators, historical data, reports, clinical governance) and **Technical Admin** (`/tech-admin/*`: users, ingestion, integration, machine insights, historical data, settings) — five roles total. No functional or workflow changes.
 
 ## Backlog
 ### P0 (Phase-2)

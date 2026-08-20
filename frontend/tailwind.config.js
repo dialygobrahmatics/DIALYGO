@@ -12,7 +12,24 @@ module.exports = {
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)'
       },
+      fontFamily: {
+        head: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+        sans: ['"IBM Plex Sans"', 'system-ui', 'sans-serif'],
+      },
       colors: {
+        navy: {
+          DEFAULT: '#0a3d62',
+          deep: '#0a2d4a',
+          soft: '#1b3a4b',
+          tint: '#dbeafe',
+        },
+        saffron: {
+          DEFAULT: '#e48404',
+          warm: '#e67e22',
+        },
+        sky: {
+          brand: '#0a9de0',
+        },
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         card: {

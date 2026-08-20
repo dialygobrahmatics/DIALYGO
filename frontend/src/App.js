@@ -16,8 +16,8 @@ import {
   PatientHome, PatientMyHealth, PatientUpload, PatientReports, PatientDialysisOverview, PatientMedicalHistory, PatientProfile,
 } from "@/pages/patient/PatientPages";
 import {
-  AdminHome, AdminUsers, AdminPatients, AdminDoctors, AdminOperators, AdminIngestion, AdminIntegration,
-  AdminHistorical, AdminMachineInsights, AdminReports, AdminSettings,
+  AdminHome, DialysisAdminHome, ClinicalGovernance, AdminUsers, AdminPatients, AdminDoctors, AdminOperators,
+  AdminIngestion, AdminIntegration, AdminHistorical, AdminMachineInsights, AdminReports, AdminSettings,
 } from "@/pages/admin/AdminPages";
 
 const Shell = ({ children, roles }) => {
@@ -58,17 +58,20 @@ const routes = [
   ["/patient/dialysis-overview", <PatientDialysisOverview />, ["patient"]],
   ["/patient/medical-history", <PatientMedicalHistory />, ["patient"]],
   ["/patient/profile", <PatientProfile />, ["patient"]],
-  ["/admin/home", <AdminHome />, ["admin"]],
-  ["/admin/users", <AdminUsers />, ["admin"]],
-  ["/admin/patients", <AdminPatients />, ["admin"]],
-  ["/admin/doctors", <AdminDoctors />, ["admin"]],
-  ["/admin/operators", <AdminOperators />, ["admin"]],
-  ["/admin/ingestion", <AdminIngestion />, ["admin"]],
-  ["/admin/integration", <AdminIntegration />, ["admin"]],
-  ["/admin/historical", <AdminHistorical />, ["admin"]],
-  ["/admin/machine-insights", <AdminMachineInsights />, ["admin"]],
-  ["/admin/reports", <AdminReports />, ["admin"]],
-  ["/admin/settings", <AdminSettings />, ["admin"]],
+  ["/tech-admin/home", <AdminHome />, ["techadmin"]],
+  ["/tech-admin/users", <AdminUsers />, ["techadmin"]],
+  ["/tech-admin/ingestion", <AdminIngestion />, ["techadmin"]],
+  ["/tech-admin/integration", <AdminIntegration />, ["techadmin"]],
+  ["/tech-admin/machine-insights", <AdminMachineInsights />, ["techadmin"]],
+  ["/tech-admin/historical", <AdminHistorical />, ["techadmin"]],
+  ["/tech-admin/settings", <AdminSettings />, ["techadmin"]],
+  ["/clinical-admin/home", <DialysisAdminHome />, ["dialysisadmin"]],
+  ["/clinical-admin/patients", <AdminPatients />, ["dialysisadmin"]],
+  ["/clinical-admin/doctors", <AdminDoctors />, ["dialysisadmin"]],
+  ["/clinical-admin/operators", <AdminOperators />, ["dialysisadmin"]],
+  ["/clinical-admin/historical", <AdminHistorical />, ["dialysisadmin"]],
+  ["/clinical-admin/reports", <AdminReports />, ["dialysisadmin"]],
+  ["/clinical-admin/governance", <ClinicalGovernance />, ["dialysisadmin"]],
   ["/roadmap", <Roadmap />, null],
 ];
 

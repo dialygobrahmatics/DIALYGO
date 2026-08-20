@@ -14,10 +14,10 @@ export const usePatientContext = () => {
 };
 
 export const NoPatient = ({ to = "/operator/search" }) => (
-  <div className="bg-white border border-slate-200 rounded-md p-8" data-testid="no-patient-state">
+  <div className="dg-card p-8" data-testid="no-patient-state">
     <EmptyState text="No patient selected. Choose a patient to load their consolidated evidence." />
     <div className="text-center mt-4">
-      <Link to={to} className="text-sm font-semibold text-blue-700 hover:text-blue-800 transition-colors">Go to patient search →</Link>
+      <Link to={to} className="text-sm font-semibold text-saffron-warm hover:text-saffron transition-colors">Go to patient search →</Link>
     </div>
   </div>
 );
@@ -25,11 +25,11 @@ export const NoPatient = ({ to = "/operator/search" }) => (
 export const PatientBanner = ({ patient, insight, compact = false }) => {
   const highCount = insight.attention.filter((a) => a.severity === "high").length;
   return (
-    <div className="bg-white border border-slate-200 rounded-md shadow-sm p-5" data-testid="patient-banner">
+    <div className="dg-card p-5" data-testid="patient-banner">
       <div className="flex flex-col lg:flex-row lg:items-center gap-5 justify-between">
         <div className="flex items-start gap-4 min-w-0">
-          <div className="h-12 w-12 rounded bg-blue-50 border border-blue-200 grid place-items-center shrink-0">
-            <HeartPulse className="h-6 w-6 text-blue-700" />
+          <div className="h-12 w-12 rounded bg-navy-tint border border-[#c3dcf7] grid place-items-center shrink-0">
+            <HeartPulse className="h-6 w-6 text-navy" />
           </div>
           <div className="min-w-0">
             <p className="overline">Patient · Session #{patient.nextSessionNo}</p>
@@ -44,19 +44,19 @@ export const PatientBanner = ({ patient, insight, compact = false }) => {
         </div>
         {!compact && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="rounded border border-slate-200 px-3 py-2">
+            <div className="dg-stat px-3 py-2">
               <p className="overline">Diagnosis</p>
               <p className="text-xs font-semibold mt-1">{patient.primaryDiagnosis}</p>
             </div>
-            <div className="rounded border border-slate-200 px-3 py-2">
+            <div className="dg-stat px-3 py-2">
               <p className="overline">Access</p>
               <p className="text-xs font-semibold mt-1">{patient.vascular.type} · {patient.vascular.side}</p>
             </div>
-            <div className={`rounded border px-3 py-2 ${levelColor(insight.accessStatus.level)}`}>
+            <div className={`rounded-lg border px-3 py-2 ${levelColor(insight.accessStatus.level)}`}>
               <p className="overline">Access risk</p>
               <p className="text-sm font-bold mt-1 uppercase" data-testid="banner-access-risk">{insight.accessStatus.level}</p>
             </div>
-            <div className={`rounded border px-3 py-2 ${highCount ? "bg-red-50 border-red-200" : "bg-emerald-50 border-emerald-200"}`}>
+            <div className={`rounded-lg border px-3 py-2 ${highCount ? "bg-red-50 border-red-200" : "bg-emerald-50 border-emerald-200"}`}>
               <p className={`overline ${highCount ? "text-red-700" : "text-emerald-700"}`}>Attention</p>
               <p className={`metric-num text-sm font-bold mt-1 ${highCount ? "text-red-700" : "text-emerald-700"}`} data-testid="banner-attention-count">
                 {highCount ? <><AlertTriangle className="h-3.5 w-3.5 inline mr-1" />{highCount} high</> : "None"}
@@ -67,7 +67,7 @@ export const PatientBanner = ({ patient, insight, compact = false }) => {
       </div>
       <div className="mt-4 flex flex-wrap gap-2">
         {patient.comorbidities.map((c) => (
-          <span key={c} className="text-xs font-semibold px-2 py-1 rounded border border-slate-200 bg-slate-50 text-slate-700">{c}</span>
+          <span key={c} className="text-xs font-semibold px-2 py-1 rounded-lg border border-slate-200 bg-slate-50 text-slate-700">{c}</span>
         ))}
       </div>
     </div>
@@ -87,14 +87,14 @@ export const PatientPickerList = ({ onPick, testId = "patient-list" }) => {
             data-testid={`patient-card-${p.id}`}
             onClick={() => onPick(p.id)}
             className={`text-left bg-white border rounded-md shadow-sm hover:shadow-md transition-colors p-5 ${
-              selectedPatientId === p.id ? "border-blue-600" : "border-slate-200 hover:border-slate-300"
+              selectedPatientId === p.id ? "border-navy" : "border-slate-200 hover:border-slate-300"
             }`}
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h3 className="font-head text-lg font-bold">{p.name}</h3>
-                  <span className={`text-xs font-bold px-2 py-0.5 rounded border ${levelColor(ins.accessStatus.level)}`}>
+                  <span className={`text-xs font-bold px-2 py-0.5 rounded-lg border ${levelColor(ins.accessStatus.level)}`}>
                     Access risk {ins.accessStatus.level}
                   </span>
                 </div>

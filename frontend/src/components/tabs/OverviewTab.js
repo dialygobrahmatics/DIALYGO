@@ -29,7 +29,7 @@ export default function OverviewTab({ patient, insight, onOpenTab }) {
           {insight.attention.map((a, i) => {
             const Icon = sevIcon[a.severity] || Info;
             return (
-              <li key={i} data-testid={`attention-item-${i}`} className={`rounded-md border p-4 ${levelColor(a.severity)}`}>
+              <li key={i} data-testid={`attention-item-${i}`} className={`rounded-xl border p-4 ${levelColor(a.severity)}`}>
                 <div className="flex items-start gap-3">
                   <Icon className="h-4 w-4 mt-0.5 shrink-0" />
                   <div className="min-w-0">
@@ -68,7 +68,7 @@ export default function OverviewTab({ patient, insight, onOpenTab }) {
         title="Vascular Access"
         right={<TrendBadge direction={insight.vascularTrend.direction} pct={insight.vascularTrend.pct} />}
       >
-        <div className={`rounded-md border p-3 mb-4 ${levelColor(insight.accessStatus.level)}`}>
+        <div className={`rounded-xl border p-3 mb-4 ${levelColor(insight.accessStatus.level)}`}>
           <p className="text-sm font-semibold">{patient.vascular.type} · {patient.vascular.side}</p>
           <p className="text-sm mt-1">{patient.vascular.currentCondition}</p>
         </div>
@@ -83,7 +83,7 @@ export default function OverviewTab({ patient, insight, onOpenTab }) {
         <button
           data-testid="open-vascular-tab-btn"
           onClick={() => onOpenTab("vascular")}
-          className="mt-4 text-sm font-semibold text-blue-700 hover:text-blue-800 transition-colors"
+          className="mt-4 text-sm font-semibold text-saffron-warm hover:text-saffron transition-colors"
         >
           View vascular access timeline →
         </button>
@@ -100,7 +100,7 @@ export default function OverviewTab({ patient, insight, onOpenTab }) {
                   <XAxis dataKey="name" tick={{ fontSize: 10 }} stroke="#94a3b8" />
                   <YAxis tick={{ fontSize: 10 }} stroke="#94a3b8" />
                   <Tooltip contentStyle={{ fontSize: 12, borderRadius: 6 }} />
-                  <Line type="monotone" dataKey="qb" stroke="#2563eb" strokeWidth={2} dot={false} name="Qb" />
+                  <Line type="monotone" dataKey="qb" stroke="#0a3d62" strokeWidth={2} dot={false} name="Qb" />
                   <Line type="monotone" dataKey="vp" stroke="#dc2626" strokeWidth={2} dot={false} name="Venous P" />
                 </LineChart>
               </ResponsiveContainer>
@@ -176,7 +176,7 @@ export default function OverviewTab({ patient, insight, onOpenTab }) {
         <p className="overline flex items-center gap-1.5 mt-6"><FileText className="h-3.5 w-3.5" /> Uploaded documents</p>
         <ul className="mt-2 space-y-1.5">
           {patient.documents.slice(0, 3).map((d, i) => (
-            <li key={i} className="text-sm text-blue-700 truncate">{d.name} <span className="text-xs text-slate-500">· {d.type}</span></li>
+            <li key={i} className="text-sm text-navy truncate">{d.name} <span className="text-xs text-slate-500">· {d.type}</span></li>
           ))}
         </ul>
 
@@ -187,7 +187,7 @@ export default function OverviewTab({ patient, insight, onOpenTab }) {
         <button
           data-testid="open-history-tab-btn"
           onClick={() => onOpenTab("history")}
-          className="mt-5 text-sm font-semibold text-blue-700 hover:text-blue-800 transition-colors"
+          className="mt-5 text-sm font-semibold text-saffron-warm hover:text-saffron transition-colors"
         >
           Open full historical evidence →
         </button>

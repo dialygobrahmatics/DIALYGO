@@ -3,14 +3,14 @@ import { Panel, Metric, TrendBadge } from "@/components/Bits";
 import { levelColor } from "@/lib/engine";
 
 const typeStyle = {
-  creation: { dot: "bg-blue-600", label: "Creation" },
+  creation: { dot: "bg-navy", label: "Creation" },
   maturation: { dot: "bg-emerald-600", label: "Maturation" },
   infiltration: { dot: "bg-red-600", label: "Infiltration" },
   bleeding: { dot: "bg-red-600", label: "Bleeding" },
   infection: { dot: "bg-orange-600", label: "Infection" },
   stenosis: { dot: "bg-amber-600", label: "Stenosis" },
   thrombosis: { dot: "bg-red-700", label: "Thrombosis" },
-  intervention: { dot: "bg-blue-700", label: "Intervention" },
+  intervention: { dot: "bg-sky-brand", label: "Intervention" },
   observation: { dot: "bg-slate-600", label: "Operator observation" },
   flow: { dot: "bg-indigo-600", label: "Flow measurement" },
 };
@@ -28,7 +28,7 @@ export default function VascularTab({ patient, insight }) {
   return (
     <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
       <Panel testId="vascular-profile-panel" title="Vascular Access Profile" hint="Consolidated access record, Phase-1 manual + historical entry">
-        <div className={`rounded-md border p-4 ${levelColor(insight.accessStatus.level)}`}>
+        <div className={`rounded-xl border p-4 ${levelColor(insight.accessStatus.level)}`}>
           <p className="overline">Access status check</p>
           <p className="text-sm font-semibold mt-1">{insight.accessStatus.objective}</p>
           <p className="text-sm mt-1">{insight.accessStatus.status}</p>
@@ -63,7 +63,7 @@ export default function VascularTab({ patient, insight }) {
               <YAxis tick={{ fontSize: 10 }} stroke="#94a3b8" />
               <Tooltip contentStyle={{ fontSize: 12, borderRadius: 6 }} />
               <ReferenceLine y={600} stroke="#dc2626" strokeDasharray="4 4" label={{ value: "600", fontSize: 10, fill: "#dc2626" }} />
-              <Line type="monotone" dataKey="flow" stroke="#2563eb" strokeWidth={2.5} dot={{ r: 3 }} name="Flow mL/min" />
+              <Line type="monotone" dataKey="flow" stroke="#0a3d62" strokeWidth={2.5} dot={{ r: 3 }} name="Flow mL/min" />
             </LineChart>
           </ResponsiveContainer>
         </div>
