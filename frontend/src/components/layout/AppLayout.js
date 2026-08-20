@@ -104,17 +104,9 @@ export default function AppLayout({ children }) {
 
   const brand = (
     <div className="flex items-center gap-2.5 min-w-0">
-      <div className="h-9 w-9 rounded-xl bg-white grid place-items-center shrink-0 shadow-sm">
-        <Activity className="h-5 w-5 text-navy" />
+      <div className="h-9 rounded-xl bg-white grid place-items-center shrink-0 shadow-sm px-2">
+        <img src="/dialygo-logo.png" alt="DialyGo" className={`object-contain ${collapsed ? "h-6 w-14" : "h-7 w-[132px]"}`} data-testid="brand-logo" />
       </div>
-      {!collapsed && (
-        <div className="min-w-0">
-          <p className="font-head font-extrabold leading-none text-lg tracking-tight" style={{ color: "#ffffff" }}>
-            Dialy<span style={{ color: "#e48404" }}>Go</span>
-          </p>
-          <p className="text-[10px] uppercase tracking-[0.16em] mt-1" style={{ color: "rgba(255,255,255,0.6)" }}>Operator Intelligence</p>
-        </div>
-      )}
     </div>
   );
 

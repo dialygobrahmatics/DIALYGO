@@ -42,6 +42,8 @@ scope and is not captured, displayed or on the roadmap.
 
 - 2026-06-20 (later still) — Operator/Patient/Doctor/Reports increment: cosmetic file upload on the Operator dashboard (any file type, filename + green "Uploaded" label, file never read) that opens an "Enter Patient Details" modal (Name, Age, Gender, UHID, Diagnosis, Access Type, Access Flow, Next Session, Schedule); Submit appends ONE new patient card built from the existing card component into the shared patient list (visible in both Operator and Doctor sections) without touching the three seeded patients or any summary counter; "Run Report" on the new card only with three states (Idle → 2.5s "Analyzing..." with spinner → static report card with summary, one risk flag, one recommendation); doctor name changed everywhere to Dr. Girish Reddy; breadcrumb made functional for the Patients flow (Home > Patients > [Patient] > [Sub-page]) with clickable parent segments, other pages unchanged. Verified 13/13 by testing agent; the two flagged gaps (active-patient chip and Run Report state lost on navigation) were fixed by lifting report state into AppContext.
 
+- 2026-06-20 (final increment) — Brand logo swapped to the supplied DialyGo logo image (`/dialygo-logo.png`, used as-is, unmodified) in the sidebar header (expanded + collapsed) and on the login/workspace page, keeping existing placement/sizing/spacing; doctor name corrected everywhere to **DR. Gireesh Reddy**; new **COG (Core Objective and Goal)** field added to every patient card (seeded per patient, auto-generated for operator-added patients).
+
 ## Backlog
 ### P0 (Phase-2)
 - FastAPI backend + MongoDB/Postgres persistence, replace mock data layer

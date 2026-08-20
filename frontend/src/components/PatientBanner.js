@@ -104,11 +104,12 @@ export const PatientPickerList = ({ onPick, testId = "patient-list", renderExtra
               </div>
               <UserRound className="h-5 w-5 text-slate-400 shrink-0" />
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4 pt-4 border-t border-slate-100">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-4 pt-4 border-t border-slate-100">
               <div><p className="overline">Next session</p><p className="metric-num font-semibold mt-1">#{p.nextSessionNo}</p></div>
               <div><p className="overline">Access</p><p className="text-sm font-semibold mt-1">{p.vascular.type}</p></div>
               <div><p className="overline">Access flow</p><p className="metric-num font-semibold mt-1">{p.vascular.lastFlowMlMin}</p></div>
               <div><p className="overline">Schedule</p><p className="text-xs font-semibold mt-1">{p.schedule}</p></div>
+              <div data-testid={`patient-cog-${p.id}`}><p className="overline">COG</p><p className="text-xs font-semibold mt-1">{p.cog || "Core objective and goal to be confirmed"}</p></div>
             </div>
             {highs.length > 0 && (
               <p className="mt-3 text-xs font-semibold text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2">

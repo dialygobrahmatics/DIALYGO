@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ShieldCheck, Activity, Lock, ChevronRight, Fingerprint } from "lucide-react";
+import { ShieldCheck, Lock, ChevronRight, Fingerprint } from "lucide-react";
 import { useApp, ROLES } from "@/context/AppContext";
 import { operators } from "@/data/mockData";
 import { Button } from "@/components/ui/button";
@@ -57,11 +57,12 @@ export default function Login() {
         />
         <div className="absolute inset-0 dg-gradient-navy opacity-80" />
         <div className="relative h-full flex flex-col justify-between p-12">
-          <div className="flex items-center gap-3 text-white">
-            <div className="h-11 w-11 rounded-2xl bg-white grid place-items-center shadow-sm"><Activity className="h-6 w-6 text-navy" /></div>
+          <div className="flex items-center gap-3">
+            <div className="h-11 rounded-2xl bg-white grid place-items-center shadow-sm px-3">
+              <img src="/dialygo-logo.png" alt="DialyGo" className="h-7 w-[150px] object-contain" data-testid="login-brand-logo" />
+            </div>
             <div>
-              <p className="font-head text-2xl font-extrabold leading-none" style={{ color: "#ffffff" }}>Dialy<span style={{ color: "#e48404" }}>Go</span></p>
-              <p className="overline text-white/60 mt-1">Operator Intelligence &amp; Vascular Assessment</p>
+              <p className="overline text-white/60">Operator Intelligence &amp; Vascular Assessment</p>
             </div>
           </div>
           <div className="bg-navy-deep/85 border border-white/15 rounded-2xl p-8 max-w-xl backdrop-blur-sm">
@@ -81,8 +82,7 @@ export default function Login() {
       <div className="flex items-center justify-center p-6 sm:p-12 bg-white">
         <form onSubmit={submit} className="w-full max-w-md" data-testid="login-form">
           <div className="flex items-center gap-3 lg:hidden mb-8">
-            <div className="h-10 w-10 rounded-2xl bg-navy grid place-items-center text-white"><Activity className="h-5 w-5" /></div>
-            <p className="font-head text-xl font-extrabold">Dialy<span className="text-saffron">Go</span></p>
+            <img src="/dialygo-logo.png" alt="DialyGo" className="h-8 w-[160px] object-contain" data-testid="login-brand-logo-mobile" />
           </div>
 
           <p className="overline">Sign in</p>

@@ -101,7 +101,7 @@ export function OperatorHome() {
             <p className="overline">Summary</p>
             <p className="text-sm text-slate-700 mt-1.5">
               Consolidated review of the available dialysis, vascular-access and laboratory evidence indicates a session
-              profile consistent with the patient's recent baseline. Reviewed by Dr. Girish Reddy.
+              profile consistent with the patient's recent baseline. Reviewed by DR. Gireesh Reddy.
             </p>
             <p className="overline mt-5">Risk flag</p>
             <div className={`rounded-xl border p-3 mt-1.5 ${levelColor("moderate")}`}>

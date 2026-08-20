@@ -4,7 +4,7 @@ export const platformUsers = [
   { id: "OPR-1041", name: "S. Kulkarni", role: "Operator", unit: "Nephro Unit B", status: "Active", lastLogin: "2026-06-19 07:42" },
   { id: "OPR-2276", name: "R. Menon", role: "Operator", unit: "Nephro Unit A", status: "Active", lastLogin: "2026-06-18 12:05" },
   { id: "OPR-3390", name: "A. Fernandes", role: "Operator", unit: "Critical Care Dialysis", status: "Active", lastLogin: "2026-06-17 16:20" },
-  { id: "DOC-0071", name: "Dr. Girish Reddy", role: "Doctor", unit: "Nephrology", status: "Active", lastLogin: "2026-06-19 08:10" },
+  { id: "DOC-0071", name: "DR. Gireesh Reddy", role: "Doctor", unit: "Nephrology", status: "Active", lastLogin: "2026-06-19 08:10" },
   { id: "DOC-0088", name: "Dr. P. Deshmukh", role: "Doctor", unit: "Nephrology", status: "Active", lastLogin: "2026-06-16 09:55" },
   { id: "DOC-0102", name: "Dr. S. Rao", role: "Doctor", unit: "Interventional Radiology", status: "Invited", lastLogin: "—" },
   { id: "ADM-0001", name: "P. Raghavan", role: "Technical Admin", unit: "DialyGo Platform Operations", status: "Active", lastLogin: "2026-06-19 06:30" },
@@ -15,7 +15,7 @@ export const platformUsers = [
 ];
 
 export const doctorsDirectory = [
-  { id: "DOC-0071", name: "Dr. Girish Reddy", speciality: "Nephrology", patients: 2, pendingSignOffs: 1, unit: "Nephro Unit B" },
+  { id: "DOC-0071", name: "DR. Gireesh Reddy", speciality: "Nephrology", patients: 2, pendingSignOffs: 1, unit: "Nephro Unit B" },
   { id: "DOC-0088", name: "Dr. P. Deshmukh", speciality: "Nephrology", patients: 1, pendingSignOffs: 0, unit: "Nephro Unit A" },
   { id: "DOC-0102", name: "Dr. S. Rao", speciality: "Interventional Radiology", patients: 0, pendingSignOffs: 0, unit: "Vascular" },
 ];

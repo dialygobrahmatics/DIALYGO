@@ -17,6 +17,7 @@ const buildCustomPatient = (form) => {
     primaryDiagnosis: form.diagnosis || tpl.primaryDiagnosis,
     nextSessionNo: form.nextSession || tpl.nextSessionNo,
     schedule: form.schedule || tpl.schedule,
+    cog: `Maintain ${form.accessType || tpl.vascular.type} function and achieve prescribed session targets`,
     vascular: {
       ...tpl.vascular,
       type: form.accessType || tpl.vascular.type,
@@ -80,7 +81,7 @@ export const ROLES = {
 
 const demoUsers = {
   operator: { id: "OPR-1041", name: "S. Kulkarni", role: "operator", title: "Senior Dialysis Technician", unit: "Nephro Unit B" },
-  doctor: { id: "DOC-0071", name: "Dr. Girish Reddy", role: "doctor", title: "Consultant Nephrologist", unit: "Nephrology" },
+  doctor: { id: "DOC-0071", name: "DR. Gireesh Reddy", role: "doctor", title: "Consultant Nephrologist", unit: "Nephrology" },
   patient: { id: "DUR-PT-00218", name: "Ramesh Iyer", role: "patient", title: "Patient", unit: "Maintenance haemodialysis" },
   dialysisadmin: { id: "ADM-0002", name: "Dr. K. Sharma", role: "dialysisadmin", title: "Dialysis Unit Administrator", unit: "Dialysis Services" },
   techadmin: { id: "ADM-0001", name: "P. Raghavan", role: "techadmin", title: "Technical Administrator", unit: "DialyGo Platform Operations" },
