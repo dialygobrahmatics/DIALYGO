@@ -1,4 +1,4 @@
-// DURISE Phase-1 rule-based decision-support engine (illustrative, non-diagnostic).
+// Dialyso Phase-I rule-based decision-support engine (illustrative, non-diagnostic).
 
 export const lastN = (sessions, n = 10) => sessions.slice(-n);
 

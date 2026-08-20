@@ -15,18 +15,18 @@ export default function ReportTab({ patient, insight }) {
   const signOff = draft.signOff;
   const [phone, setPhone] = useState(patient.phone);
 
-  const signed = signOff.accepted && signOff.clinician.trim().length > 1;
+  const signed = signOff.accepted && signOff.status !== "returned" && signOff.clinician.trim().length > 1;
 
   const sign = () => {
     if (!signOff.clinician.trim()) return toast.error("Enter the reviewing clinician's name.");
-    updateDraft(patient, "signOff", { accepted: true, at: new Date().toISOString() });
+    updateDraft(patient, "signOff", { accepted: true, status: "approved", at: new Date().toISOString() });
     toast.success("Clinician sign-off recorded", { description: "Recommendations may now be applied at the machine." });
   };
 
   const sendWhatsapp = (kind) => {
     if (!signed) return toast.error("Clinician sign-off is required before dispatch.");
     const body = kind === "pdf" ? whatsappTemplates.reportDispatch(patient) : whatsappTemplates.sessionSummary(patient, { sessionNo: patient.nextSessionNo, date: new Date().toISOString().slice(0, 10), durationMin: insight.tuning.durationMin, ufAchieved: draft.after.actualUf || insight.tuning.ufTargetL });
-    addWhatsapp({ to: phone, kind: kind === "pdf" ? "PDF report" : "Text message", body, attachment: kind === "pdf" ? `DURISE_Session_${patient.nextSessionNo}_${patient.id}.pdf` : null });
+    addWhatsapp({ to: phone, kind: kind === "pdf" ? "PDF report" : "Text message", body, attachment: kind === "pdf" ? `Dialyso_Session_${patient.nextSessionNo}_${patient.id}.pdf` : null });
     toast.success(`WhatsApp ${kind === "pdf" ? "report" : "message"} queued to ${phone}`, { description: "MOCKED dispatch — Phase-2 connects the WhatsApp Business API." });
   };
 
@@ -35,7 +35,7 @@ export default function ReportTab({ patient, insight }) {
       <Panel
         testId="prescription-report-panel"
         title="Core Engine Output — Prescription Report"
-        hint="Rule-based Phase-1 engine. Decision support for clinician review, not an autonomous machine setting."
+        hint="Prototype Analysis · Decision Support Only · Requires Qualified Clinical Review. Rule-based Phase-I engine, not an autonomous machine setting."
         right={
           <div className="flex gap-2 no-print">
             <Button data-testid="print-pdf-btn" variant="outline" onClick={() => { toast.info("Preparing PDF"); setTimeout(() => window.print(), 300); }}>
@@ -54,6 +54,9 @@ export default function ReportTab({ patient, insight }) {
         </div>
 
         <p className="overline">1 · Session tuning recommendation</p>
+        <p className="text-xs text-blue-800 bg-blue-50 border border-blue-200 rounded px-3 py-2 mt-2 inline-block font-semibold">
+          Decision Support Recommendation — not an autonomous machine setting
+        </p>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-3 rounded-md border border-blue-200 bg-blue-50 p-4" data-testid="tuning-block">
           <Metric label="Blood flow" value={insight.tuning.bloodFlow} unit="mL/min" testId="tuning-qb" />
           <Metric label="Dialysate flow" value={insight.tuning.dialysateFlow} unit="mL/min" />
@@ -90,8 +93,8 @@ export default function ReportTab({ patient, insight }) {
           ))}
         </div>
         <p className="text-xs text-slate-500 mt-3">
-          Risk flags are derived from dialysis history, vascular-access records and laboratory data only. No genomic or DNA-based
-          personalisation is used anywhere in DURISE.
+          Risk flags are derived from dialysis history, vascular-access records and laboratory data only. No hereditary or
+          gene-level personalisation is used anywhere in Dialyso.
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
@@ -115,7 +118,18 @@ export default function ReportTab({ patient, insight }) {
 
         <p className="overline mt-8">6 · Clinician sign-off</p>
         <div className="mt-3 rounded-md border border-slate-200 bg-slate-50 p-4" data-testid="signoff-block">
-          {signed ? (
+          {signOff.status === "returned" ? (
+            <div className="flex items-start gap-3">
+              <Stamp className="h-5 w-5 text-amber-700 mt-0.5" />
+              <div>
+                <p className="text-sm font-bold text-amber-800" data-testid="signoff-status">Returned for review — not approved for application</p>
+                <p className="text-sm text-slate-700 mt-1">
+                  {signOff.clinician} · {signOff.at ? new Date(signOff.at).toLocaleString() : ""}
+                </p>
+                {signOff.comment && <p className="text-sm text-slate-600 mt-1">Comment: {signOff.comment}</p>}
+              </div>
+            </div>
+          ) : signed ? (
             <div className="flex items-start gap-3">
               <Stamp className="h-5 w-5 text-emerald-700 mt-0.5" />
               <div>

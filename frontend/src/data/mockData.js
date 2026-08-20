@@ -1,4 +1,4 @@
-// DURISE Phase-1 mock evidence store (JSON). Phase-2 will replace with API calls.
+// Dialyso Phase-I mock evidence store (JSON). Phase-2 will replace with API calls.
 
 export const operators = [
   { id: "OPR-1041", name: "S. Kulkarni", role: "Senior Dialysis Technician", unit: "Nephro Unit B", pin: "1041" },
@@ -318,9 +318,9 @@ export const patients = [
 
 export const whatsappTemplates = {
   sessionSummary: (p, s) =>
-    `Dear ${p.name}, your dialysis session #${s.sessionNo} on ${s.date} is complete. Duration ${s.durationMin} min, fluid removed ${s.ufAchieved} L. Please follow fluid and diet advice. - DURISE Dialysis Unit`,
+    `Dear ${p.name}, your dialysis session #${s.sessionNo} on ${s.date} is complete. Duration ${s.durationMin} min, fluid removed ${s.ufAchieved} L. Please follow fluid and diet advice. - Dialyso Dialysis Unit`,
   reportDispatch: (p) =>
-    `Dear ${p.name}, your DURISE session report (PDF) is attached. Please carry it for your next nephrology review. - DURISE Dialysis Unit`,
+    `Dear ${p.name}, your Dialyso session report (PDF) is attached. Please carry it for your next nephrology review. - Dialyso Dialysis Unit`,
 };
 
 export const getPatient = (id) => patients.find((p) => p.id === id);
