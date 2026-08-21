@@ -1,5 +1,17 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { operators, patients } from "@/data/mockData";
+import { doctorsDirectory } from "@/data/adminData";
+
+// Demo access gate only — not real security. Single shared password for all valid mock IDs.
+export const DEMO_PASSWORD = "DialyGo2026";
+
+export const validIdsByRole = {
+  operator: operators.map((o) => o.id),
+  doctor: doctorsDirectory.map((d) => d.id),
+  patient: patients.map((p) => p.id),
+  dialysisadmin: ["ADM-0002"],
+  techadmin: ["ADM-0001"],
+};
 
 const AppContext = createContext(null);
 
@@ -98,6 +110,7 @@ export function AppProvider({ children }) {
   const [uploads, setUploads] = useState([]);
   const [engineRuns, setEngineRuns] = useState({});
   const [customPatients, setCustomPatients] = useState([]);
+  const [demoAccess, setDemoAccess] = useState(() => localStorage.getItem("dialygo_demo_access") === "true");
   const [reportRuns, setReportRuns] = useState({});
 
   const setReportRun = (patientId, state) => setReportRuns((prev) => ({ ...prev, [patientId]: state }));
@@ -113,17 +126,23 @@ export function AppProvider({ children }) {
     else localStorage.removeItem("dialygo_user");
   }, [operator]);
 
-  const login = (roleId, identifier, consent) => {
+  const login = (roleId, identifier, consent, password) => {
     if (!ROLES[roleId]) return { ok: false, error: "Select a role to continue." };
     if (!consent) return { ok: false, error: "DPDP Act consent acknowledgement is required." };
+    const entered = (identifier || "").trim();
+    const known = (validIdsByRole[roleId] || []).find((v) => v.toLowerCase() === entered.toLowerCase());
+    if (!known) return { ok: false, error: "Invalid ID or password." };
+    if (!demoAccess && (password || "") !== DEMO_PASSWORD) return { ok: false, error: "Invalid ID or password." };
+    if (!demoAccess) {
+      localStorage.setItem("dialygo_demo_access", "true");
+      setDemoAccess(true);
+    }
     if (roleId === "operator") {
-      const found = operators.find((o) => o.id.toLowerCase() === identifier.trim().toLowerCase());
-      if (!found) return { ok: false, error: "Operator ID not recognised in this unit." };
+      const found = operators.find((o) => o.id.toLowerCase() === known.toLowerCase());
       setOperator({ ...demoUsers.operator, id: found.id, name: found.name, title: found.role, unit: found.unit, loginAt: new Date().toISOString(), consentAt: new Date().toISOString() });
       return { ok: true, home: ROLES.operator.home };
     }
-    if (!identifier.trim()) return { ok: false, error: "Enter your registered ID to continue." };
-    setOperator({ ...demoUsers[roleId], loginAt: new Date().toISOString(), consentAt: new Date().toISOString() });
+    setOperator({ ...demoUsers[roleId], id: known, loginAt: new Date().toISOString(), consentAt: new Date().toISOString() });
     return { ok: true, home: ROLES[roleId].home };
   };
 
@@ -179,9 +198,10 @@ export function AppProvider({ children }) {
       addCustomPatient,
       reportRuns,
       setReportRun,
+      demoAccess,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [operator, drafts, whatsappLog, selectedPatientId, uploads, engineRuns, customPatients, reportRuns]
+    [operator, drafts, whatsappLog, selectedPatientId, uploads, engineRuns, customPatients, reportRuns, demoAccess]
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

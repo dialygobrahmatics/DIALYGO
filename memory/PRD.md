@@ -44,6 +44,8 @@ scope and is not captured, displayed or on the roadmap.
 
 - 2026-06-20 (final increment) — Brand logo swapped to the supplied DialyGo logo image (`/dialygo-logo.png`, used as-is, unmodified) in the sidebar header (expanded + collapsed) and on the login/workspace page, keeping existing placement/sizing/spacing; doctor name corrected everywhere to **DR. Gireesh Reddy**; new **COG (Core Objective and Goal)** field added to every patient card (seeded per patient, auto-generated for operator-added patients).
 
+- 2026-06-21 — Demo access gate added to the existing "Choose your workspace" page (no new screen): ID field label made role-neutral ("User ID"), new Password field below it, single hardcoded demo password `DialyGo2026` (constant `DEMO_PASSWORD` in AppContext) checked against the existing mock IDs per role (`validIdsByRole` built from operators / doctorsDirectory / patients / ADM-0001 / ADM-0002). Failure shows one generic inline error "Invalid ID or password."; success sets `dialygo_demo_access=true` in localStorage so the Password field is skipped for the rest of the demo session. Quick-select chips, role cards and the DPDP consent block are unchanged. No backend, no hashing — demo access control only, not real security.
+
 ## Backlog
 ### P0 (Phase-2)
 - FastAPI backend + MongoDB/Postgres persistence, replace mock data layer

@@ -8,11 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 
 const roleHints = {
-  operator: { label: "Operator ID", placeholder: "OPR-1041" },
-  doctor: { label: "Clinician ID", placeholder: "DOC-0071" },
-  patient: { label: "Registered mobile or DialyGo ID", placeholder: "DUR-PT-00218" },
-  dialysisadmin: { label: "Dialysis Admin ID", placeholder: "ADM-0002" },
-  techadmin: { label: "Technical Admin ID", placeholder: "ADM-0001" },
+  operator: { label: "User ID", placeholder: "OPR-1041" },
+  doctor: { label: "User ID", placeholder: "DOC-0071" },
+  patient: { label: "User ID", placeholder: "DUR-PT-00218" },
+  dialysisadmin: { label: "User ID", placeholder: "ADM-0002" },
+  techadmin: { label: "User ID", placeholder: "ADM-0001" },
 };
 
 const demoIds = {
@@ -24,10 +24,11 @@ const demoIds = {
 };
 
 export default function Login() {
-  const { login } = useApp();
+  const { login, demoAccess } = useApp();
   const navigate = useNavigate();
   const [role, setRole] = useState("operator");
   const [id, setId] = useState("");
+  const [password, setPassword] = useState("");
   const [consent, setConsent] = useState(false);
   const [error, setError] = useState("");
   const [otpStage, setOtpStage] = useState(false);
@@ -42,7 +43,7 @@ export default function Login() {
       return;
     }
     if (role === "patient" && otp.trim() !== "123456") return setError("Enter the mock OTP 123456 to continue.");
-    const res = login(role, id, consent);
+    const res = login(role, id, consent, password);
     if (!res.ok) return setError(res.error);
     navigate(res.home);
   };
@@ -114,6 +115,22 @@ export default function Login() {
               className="mt-2 h-12 text-base metric-num tracking-wider"
               autoComplete="off"
             />
+
+          {!demoAccess && (
+            <label className="block mt-4">
+              <span className="overline">Password</span>
+              <Input
+                data-testid="login-password-input"
+                type="password"
+                value={password}
+                onChange={(e) => { setPassword(e.target.value); setError(""); }}
+                placeholder="Demo access password"
+                className="mt-2 h-12 text-base"
+                autoComplete="off"
+              />
+            </label>
+          )}
+
           </label>
 
           <div className="mt-3 flex flex-wrap gap-2">
