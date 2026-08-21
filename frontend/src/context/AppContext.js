@@ -155,7 +155,11 @@ export function AppProvider({ children }) {
 
   const recordEngineRun = (patientId) => setEngineRuns((prev) => ({ ...prev, [patientId]: new Date().toISOString() }));
 
-  const logout = () => setOperator(null);
+  const logout = () => {
+    localStorage.removeItem("dialygo_demo_access");
+    setDemoAccess(false);
+    setOperator(null);
+  };
 
   const getDraft = (patient) => drafts[patient.id] || emptyDraft(patient);
 
