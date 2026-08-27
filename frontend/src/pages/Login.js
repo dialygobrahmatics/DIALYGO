@@ -116,6 +116,7 @@ export default function Login() {
               autoComplete="off"
             />
 
+          {/* TEMP DISABLED - PASSWORD CHECK - re-enable if needed
           {!demoAccess && (
             <label className="block mt-4">
               <span className="overline">Password</span>
@@ -130,6 +131,7 @@ export default function Login() {
               />
             </label>
           )}
+          */}
 
           </label>
 

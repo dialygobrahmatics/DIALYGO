@@ -46,6 +46,8 @@ scope and is not captured, displayed or on the roadmap.
 
 - 2026-06-21 — Demo access gate added to the existing "Choose your workspace" page (no new screen): ID field label made role-neutral ("User ID"), new Password field below it, single hardcoded demo password `DialyGo2026` (constant `DEMO_PASSWORD` in AppContext) checked against the existing mock IDs per role (`validIdsByRole` built from operators / doctorsDirectory / patients / ADM-0001 / ADM-0002). Failure shows one generic inline error "Invalid ID or password."; success sets `dialygo_demo_access=true` in localStorage so the Password field is skipped for the rest of the demo session. Quick-select chips, role cards and the DPDP consent block are unchanged. No backend, no hashing — demo access control only, not real security.
 
+- 2026-06-27 — Demo password gate TEMPORARILY DISABLED (commented out, not removed) on the login page: the Password input block in `Login.js` and the password + "ID must match a known mock ID" checks in `AppContext.login()` are commented with `// TEMP DISABLED - PASSWORD CHECK - re-enable if needed`. `DEMO_PASSWORD` and `validIdsByRole` are retained for restoration. Role + any ID + DPDP consent is now sufficient to enter. Logout still clears `dialygo_demo_access`.
+
 ## Backlog
 ### P0 (Phase-2)
 - FastAPI backend + MongoDB/Postgres persistence, replace mock data layer

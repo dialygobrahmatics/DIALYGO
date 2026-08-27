@@ -130,16 +130,23 @@ export function AppProvider({ children }) {
     if (!ROLES[roleId]) return { ok: false, error: "Select a role to continue." };
     if (!consent) return { ok: false, error: "DPDP Act consent acknowledgement is required." };
     const entered = (identifier || "").trim();
-    const known = (validIdsByRole[roleId] || []).find((v) => v.toLowerCase() === entered.toLowerCase());
-    if (!known) return { ok: false, error: "Invalid ID or password." };
-    if (!demoAccess && (password || "") !== DEMO_PASSWORD) return { ok: false, error: "Invalid ID or password." };
-    if (!demoAccess) {
-      localStorage.setItem("dialygo_demo_access", "true");
-      setDemoAccess(true);
-    }
+    if (!entered) return { ok: false, error: "Enter your registered ID to continue." };
+
+    // TEMP DISABLED - PASSWORD CHECK - re-enable if needed
+    // const known = (validIdsByRole[roleId] || []).find((v) => v.toLowerCase() === entered.toLowerCase());
+    // if (!known) return { ok: false, error: "Invalid ID or password." };
+    // if (!demoAccess && (password || "") !== DEMO_PASSWORD) return { ok: false, error: "Invalid ID or password." };
+    // if (!demoAccess) {
+    //   localStorage.setItem("dialygo_demo_access", "true");
+    //   setDemoAccess(true);
+    // }
+    const known = entered;
+
     if (roleId === "operator") {
       const found = operators.find((o) => o.id.toLowerCase() === known.toLowerCase());
-      setOperator({ ...demoUsers.operator, id: found.id, name: found.name, title: found.role, unit: found.unit, loginAt: new Date().toISOString(), consentAt: new Date().toISOString() });
+      setOperator(found
+        ? { ...demoUsers.operator, id: found.id, name: found.name, title: found.role, unit: found.unit, loginAt: new Date().toISOString(), consentAt: new Date().toISOString() }
+        : { ...demoUsers.operator, id: known, loginAt: new Date().toISOString(), consentAt: new Date().toISOString() });
       return { ok: true, home: ROLES.operator.home };
     }
     setOperator({ ...demoUsers[roleId], id: known, loginAt: new Date().toISOString(), consentAt: new Date().toISOString() });
