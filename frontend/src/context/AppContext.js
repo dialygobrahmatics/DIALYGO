@@ -158,7 +158,18 @@ export function AppProvider({ children }) {
     return ROLES[roleId].home;
   };
 
-  const addUpload = (doc) => setUploads((prev) => [{ id: `UPL-${Date.now()}`, at: new Date().toISOString(), status: "Received (mock)", ...doc }, ...prev]);
+  const addUpload = (doc) => setUploads((prev) => {
+    const entry = { id: doc.id || `UPL-${Date.now()}`, at: new Date().toISOString(), status: doc.status || "Received (mock)", ...doc };
+    if (doc.replace) {
+      const idx = prev.findIndex((u) => u.id === entry.id);
+      if (idx >= 0) {
+        const next = [...prev];
+        next[idx] = { ...prev[idx], ...entry, at: prev[idx].at };
+        return next;
+      }
+    }
+    return [entry, ...prev];
+  });
 
   const recordEngineRun = (patientId) => setEngineRuns((prev) => ({ ...prev, [patientId]: new Date().toISOString() }));
 

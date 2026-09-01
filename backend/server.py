@@ -42,6 +42,10 @@ class StatusCheckCreate(BaseModel):
 async def root():
     return {"message": "Hello World"}
 
+@api_router.get("/health")
+async def health():
+    return {"status": "ok", "service": "dialygo-api"}
+
 @api_router.post("/status", response_model=StatusCheck)
 async def create_status_check(input: StatusCheckCreate):
     status_dict = input.model_dump()
@@ -67,6 +71,8 @@ async def get_status_checks():
     return status_checks
 
 # Include the router in the main app
+from routers.documents import router as documents_router
+api_router.include_router(documents_router)
 app.include_router(api_router)
 
 app.add_middleware(

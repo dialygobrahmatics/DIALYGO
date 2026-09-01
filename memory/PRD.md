@@ -48,6 +48,8 @@ scope and is not captured, displayed or on the roadmap.
 
 - 2026-06-27 — Demo password gate TEMPORARILY DISABLED (commented out, not removed) on the login page: the Password input block in `Login.js` and the password + "ID must match a known mock ID" checks in `AppContext.login()` are commented with `// TEMP DISABLED - PASSWORD CHECK - re-enable if needed`. `DEMO_PASSWORD` and `validIdsByRole` are retained for restoration. Role + any ID + DPDP consent is now sufficient to enter. Logout still clears `dialygo_demo_access`.
 
+- 2026-09-01 — **OCR MVP (first real backend)**: FastAPI + MongoDB + local-disk storage + PyMuPDF/Tesseract OCR wired into the EXISTING Patient → Upload Data screen. New backend files: `core/db.py`, `services/storage.py` (StorageBackend ABC + LocalDiskStorage), `services/ocr.py` (OcrEngine ABC + TesseractEngine), `routers/documents.py`; `server.py` gained `/api/health` and router include. Collections: `documents`, `ocr_jobs`. Endpoints: POST `/api/documents`, GET `/api/documents?patient_id=`, GET `/api/documents/{id}`, GET `/api/documents/{id}/text`, GET `/api/ocr/jobs/{jobId}`, GET `/api/health`. Async via BackgroundTasks; statuses queued→processing→processed/failed; frontend polls every ~2 s with backoff via new `src/api/client.js`. OCR text is explicitly UNVERIFIED and never touches `buildInsight()`, labs, prescriptions or risk flags. LIMITATION: local disk storage is not production-grade and is not guaranteed to survive redeployment — replace with Azure/S3 behind the same `StorageBackend` interface later.
+
 ## Backlog
 ### P0 (Phase-2)
 - FastAPI backend + MongoDB/Postgres persistence, replace mock data layer

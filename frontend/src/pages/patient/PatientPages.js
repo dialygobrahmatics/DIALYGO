@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { uploadDocument, getDocumentText, pollOcrJob, validateFile } from "@/api/client";
 
 const usePatientSelf = () => {
   const { user } = useApp();
@@ -103,22 +105,76 @@ export function PatientMyHealth() {
 }
 
 export function PatientUpload() {
-  const { uploads, addUpload } = useApp();
+  const { uploads, addUpload, user } = useApp();
+  const { patient } = usePatientSelf();
   const [form, setForm] = useState({ name: "", type: "Laboratory report", note: "" });
+  const [busy, setBusy] = useState(false);
+  const [viewer, setViewer] = useState({ open: false, title: "", text: "", loading: false });
+
+  const startUpload = async (file) => {
+    const problem = validateFile(file);
+    if (problem) return toast.error(problem);
+    setBusy(true);
+    const localId = `UPL-${Date.now()}`;
+    addUpload({ id: localId, name: file.name, type: form.type, note: form.note, status: "queued", documentId: null, jobId: null });
+    try {
+      const res = await uploadDocument({ file, patientId: patient.id, documentType: form.type, uploadedBy: user?.id });
+      addUpload({ id: localId, name: file.name, type: form.type, note: form.note, status: "queued", documentId: res.documentId, jobId: res.jobId, replace: true });
+      toast.success("Document uploaded", { description: "Text extraction has started." });
+      pollOcrJob(res.jobId, {
+        onUpdate: (job) => {
+          addUpload({ id: localId, name: file.name, type: form.type, note: form.note, status: job.status, documentId: res.documentId, jobId: res.jobId, replace: true });
+          if (job.status === "processed") toast.success("Text extraction complete", { description: "Extracted text is unverified — open it to review." });
+          if (job.status === "failed") toast.error("Text extraction failed for this document.");
+        },
+      });
+    } catch (e) {
+      addUpload({ id: localId, name: file.name, type: form.type, note: form.note, status: "failed", replace: true });
+      toast.error(e.message || "Upload failed.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const openText = async (u) => {
+    setViewer({ open: true, title: u.name, text: "", loading: true });
+    try {
+      const res = await getDocumentText(u.documentId);
+      setViewer({ open: true, title: u.name, text: res.text || "(No text could be extracted from this document.)", loading: false });
+    } catch (e) {
+      setViewer({ open: true, title: u.name, text: `Could not load extracted text: ${e.message}`, loading: false });
+    }
+  };
+
   const submit = () => {
     if (!form.name.trim()) return toast.error("Enter a document name.");
-    addUpload({ ...form });
-    toast.success("Document received (mock)", { description: "Only file metadata is captured in the Phase-I prototype." });
+    addUpload({ ...form, status: "recorded (no file)" });
+    toast.success("Document details recorded", { description: "Attach a file above to run text extraction." });
     setForm({ name: "", type: "Laboratory report", note: "" });
   };
+
+  const statusTone = (s) =>
+    s === "processed" ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+      : s === "failed" ? "bg-red-50 text-red-700 border-red-200"
+      : s === "processing" || s === "queued" ? "bg-amber-50 text-amber-800 border-amber-200"
+      : "bg-slate-50 text-slate-600 border-slate-200";
+
   return (
     <div className="space-y-4">
-      <Panel title="Upload Data" hint="Share reports and documents with your care team. Mock upload — no file leaves this device." testId="patient-upload-panel">
-        <div className="dg-dashed p-10 text-center bg-slate-50/60">
+      <Panel title="Upload Data" hint="Share reports and documents with your care team. PDF, PNG, JPG or WebP up to 20 MB." testId="patient-upload-panel">
+        <label className="dg-dashed p-10 text-center bg-slate-50/60 block cursor-pointer">
           <Upload className="h-8 w-8 text-slate-400 mx-auto" />
-          <p className="text-sm font-semibold mt-3">Drop a report here, or record its details below</p>
-          <p className="text-xs text-slate-500 mt-1">Scanned report extraction is a future release and is not available in Phase I.</p>
-        </div>
+          <p className="text-sm font-semibold mt-3">{busy ? "Uploading..." : "Select a report to upload, or record its details below"}</p>
+          <p className="text-xs text-slate-500 mt-1">Text is extracted automatically. Extracted text is unverified and is reviewed by your care team.</p>
+          <input
+            data-testid="upload-file-input"
+            type="file"
+            className="hidden"
+            accept=".pdf,.png,.jpg,.jpeg,.webp"
+            disabled={busy}
+            onChange={(e) => { const f = e.target.files && e.target.files[0]; e.target.value = ""; if (f) startUpload(f); }}
+          />
+        </label>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-5">
           <Field label="Document name">
             <Input data-testid="upload-name-input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Labs_June2026.pdf" />
@@ -139,18 +195,43 @@ export function PatientUpload() {
         {uploads.length === 0 ? <EmptyState text="Nothing uploaded yet." /> : (
           <ul className="space-y-2" data-testid="upload-list">
             {uploads.map((u) => (
-              <li key={u.id} className="rounded-lg border border-slate-200 p-3 flex items-start gap-3">
+              <li key={u.id} className="rounded-lg border border-slate-200 p-3 flex items-start gap-3" data-testid={`upload-item-${u.id}`}>
                 <FileText className="h-4 w-4 text-navy mt-0.5" />
-                <div>
+                <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold">{u.name}</p>
-                  <p className="text-xs text-slate-500 mt-0.5">{u.type} · {u.status} · {new Date(u.at).toLocaleTimeString()}</p>
+                  <p className="text-xs text-slate-500 mt-0.5 flex flex-wrap items-center gap-2">
+                    <span>{u.type} · {new Date(u.at).toLocaleTimeString()}</span>
+                    <span className={`text-[11px] font-bold px-2 py-0.5 rounded-lg border ${statusTone(u.status)}`} data-testid={`upload-status-${u.id}`}>{u.status}</span>
+                  </p>
                   {u.note && <p className="text-xs text-slate-600 mt-1">{u.note}</p>}
+                  {u.status === "processed" && u.documentId && (
+                    <Button size="sm" variant="outline" className="mt-2" data-testid={`view-text-btn-${u.id}`} onClick={() => openText(u)}>
+                      View extracted text
+                    </Button>
+                  )}
                 </div>
               </li>
             ))}
           </ul>
         )}
       </Panel>
+
+      <Dialog open={viewer.open} onOpenChange={(o) => setViewer((v) => ({ ...v, open: o }))}>
+        <DialogContent className="max-w-3xl" data-testid="ocr-text-dialog">
+          <DialogHeader>
+            <DialogTitle>Extracted text — {viewer.title}</DialogTitle>
+          </DialogHeader>
+          <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+            Unverified extracted text. It is not added to your clinical record and is reviewed by your care team.
+          </p>
+          <div className="max-h-[55vh] overflow-y-auto rounded-lg border border-slate-200 p-4 bg-slate-50/60">
+            <pre className="text-xs whitespace-pre-wrap font-mono text-slate-700" data-testid="ocr-text-content">
+              {viewer.loading ? "Loading..." : viewer.text}
+            </pre>
+          </div>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 }
