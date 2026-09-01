@@ -11,7 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { uploadDocument, getDocumentText, pollOcrJob, validateFile } from "@/api/client";
+import { uploadDocument, pollOcrJob, validateFile } from "@/api/client";
+import { OcrTextDialog, BackendDocumentList, statusTone, statusLabel } from "@/components/OcrDocuments";
 
 const usePatientSelf = () => {
   const { user } = useApp();
@@ -109,7 +110,7 @@ export function PatientUpload() {
   const { patient } = usePatientSelf();
   const [form, setForm] = useState({ name: "", type: "Laboratory report", note: "" });
   const [busy, setBusy] = useState(false);
-  const [viewer, setViewer] = useState({ open: false, title: "", text: "", loading: false });
+  const [active, setActive] = useState(null);
 
   const startUpload = async (file) => {
     const problem = validateFile(file);
@@ -136,15 +137,7 @@ export function PatientUpload() {
     }
   };
 
-  const openText = async (u) => {
-    setViewer({ open: true, title: u.name, text: "", loading: true });
-    try {
-      const res = await getDocumentText(u.documentId);
-      setViewer({ open: true, title: u.name, text: res.text || "(No text could be extracted from this document.)", loading: false });
-    } catch (e) {
-      setViewer({ open: true, title: u.name, text: `Could not load extracted text: ${e.message}`, loading: false });
-    }
-  };
+  const openText = (u) => setActive({ documentId: u.documentId, originalFilename: u.name, documentType: u.type, ocrStatus: u.status });
 
   const submit = () => {
     if (!form.name.trim()) return toast.error("Enter a document name.");
@@ -152,12 +145,6 @@ export function PatientUpload() {
     toast.success("Document details recorded", { description: "Attach a file above to run text extraction." });
     setForm({ name: "", type: "Laboratory report", note: "" });
   };
-
-  const statusTone = (s) =>
-    s === "processed" ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-      : s === "failed" ? "bg-red-50 text-red-700 border-red-200"
-      : s === "processing" || s === "queued" ? "bg-amber-50 text-amber-800 border-amber-200"
-      : "bg-slate-50 text-slate-600 border-slate-200";
 
   return (
     <div className="space-y-4">
@@ -201,7 +188,7 @@ export function PatientUpload() {
                   <p className="text-sm font-semibold">{u.name}</p>
                   <p className="text-xs text-slate-500 mt-0.5 flex flex-wrap items-center gap-2">
                     <span>{u.type} · {new Date(u.at).toLocaleTimeString()}</span>
-                    <span className={`text-[11px] font-bold px-2 py-0.5 rounded-lg border ${statusTone(u.status)}`} data-testid={`upload-status-${u.id}`}>{u.status}</span>
+                    <span className={`text-[11px] font-bold px-2 py-0.5 rounded-lg border ${statusTone(u.status)}`} data-testid={`upload-status-${u.id}`}>{statusLabel(u.status)}</span>
                   </p>
                   {u.note && <p className="text-xs text-slate-600 mt-1">{u.note}</p>}
                   {u.status === "processed" && u.documentId && (
@@ -216,21 +203,7 @@ export function PatientUpload() {
         )}
       </Panel>
 
-      <Dialog open={viewer.open} onOpenChange={(o) => setViewer((v) => ({ ...v, open: o }))}>
-        <DialogContent className="max-w-3xl" data-testid="ocr-text-dialog">
-          <DialogHeader>
-            <DialogTitle>Extracted text — {viewer.title}</DialogTitle>
-          </DialogHeader>
-          <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-            Unverified extracted text. It is not added to your clinical record and is reviewed by your care team.
-          </p>
-          <div className="max-h-[55vh] overflow-y-auto rounded-lg border border-slate-200 p-4 bg-slate-50/60">
-            <pre className="text-xs whitespace-pre-wrap font-mono text-slate-700" data-testid="ocr-text-content">
-              {viewer.loading ? "Loading..." : viewer.text}
-            </pre>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <OcrTextDialog open={!!active} onOpenChange={(o) => !o && setActive(null)} doc={active} />
 
     </div>
   );
@@ -252,6 +225,7 @@ export function PatientReports() {
         ))}
       </div>
       <Disclaimer />
+      <BackendDocumentList patientId={patient.id} testId="myreports-backend-documents" />
     </Panel>
   );
 }

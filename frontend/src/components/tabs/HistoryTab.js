@@ -1,6 +1,7 @@
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { FileText, Download } from "lucide-react";
 import { Panel, Metric, EmptyState } from "@/components/Bits";
+import { BackendDocumentList } from "@/components/OcrDocuments";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function HistoryTab({ patient }) {
@@ -172,6 +173,8 @@ export default function HistoryTab({ patient }) {
               </div>
             ))}
           </div>
+          <BackendDocumentList patientId={patient.id} testId="history-backend-documents" />
+
         </TabsContent>
 
         <TabsContent value="notes" className="mt-5">

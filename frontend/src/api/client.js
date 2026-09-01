@@ -38,6 +38,7 @@ export function uploadDocument({ file, patientId, documentType, uploadedBy }) {
 }
 
 export const listDocuments = (patientId) => request(`/documents?patient_id=${encodeURIComponent(patientId)}`);
+export const getDocuments = listDocuments;
 export const getDocument = (documentId) => request(`/documents/${documentId}`);
 export const getOcrJob = (jobId) => request(`/ocr/jobs/${jobId}`);
 export const getDocumentText = (documentId) => request(`/documents/${documentId}/text`);
