@@ -1,5 +1,11 @@
 """Backend configuration. All database/secret configuration lives here only."""
 import os
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+# Loaded here so every entry point (API, Alembic, scripts) sees identical configuration.
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 
 class Settings:

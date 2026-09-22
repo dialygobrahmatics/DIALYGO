@@ -1,70 +1,121 @@
-# DialyGo — Dialysis Procedure Operator Intelligence & Vascular Assessment (Phase-I prototype)
+# Dialygo — Product Requirements (living document)
 
-## Phase-I USP
-"Before every dialysis session, give the operator a consolidated view of the patient's historical dialysis, vascular-access
-and clinical evidence—so the current procedure is performed with context rather than isolated machine readings."
+## 1. Original problem statement (web, Phase 1 — delivered)
+"Dialysis Procedure Operator Intelligence (DialyGo)": a React decision-support dashboard giving a consolidated view of
+patient demographics, historical dialysis evidence and vascular-access intelligence before every session. Role-based
+access (Patient, Doctor, Operator, Technical Admin, Dialysis Admin) on mock clinical data plus a client-side
+rule-based insight engine. Later extended with a real FastAPI + MongoDB backend for medical PDF/image upload and
+unverified OCR text extraction (PyMuPDF + Tesseract).
 
-Final clinical decisions remain with qualified healthcare professionals. Every engine output is labelled
-**Prototype Analysis · Decision Support Only · Requires Qualified Clinical Review**.
+## 2. Original problem statement (mobile — Phase 1 delivered 2026-09-22)
+Add a production-quality **mobile client** for the existing Dialygo app without breaking the web app:
+React Native + Expo + TypeScript + Expo Router under `/mobile` as the source of truth, plus an Expo **web** export for
+in-environment visual/functional QA. NephroPlus-inspired mobile UX with Dialygo branding only (no NephroPlus assets).
+**No role-selection screen** — the backend identifies the account after OTP login and routes to the patient or doctor
+experience. Aadhaar is the unique patient identifier, stored hashed and always displayed masked. PostgreSQL is the
+production store for structured relational data (SQLAlchemy + Alembic; SQLite locally until a Neon/Supabase URL is
+supplied); MongoDB stores medical documents and OCR data. The mobile app talks only to the FastAPI REST API.
 
-## Phase-I scope guardrails
-Rule-based, illustrative, mock-data core engine only. Explicitly NOT implemented: predictive ML, image/angiogram analysis,
-autonomous machine control, real OCR, real device or HIS integration, LLM/RAG. Hereditary/gene-level personalisation is out of
-scope and is not captured, displayed or on the roadmap.
+## 3. Clinical safety constraints (non-negotiable)
+- Every engine/insight output is decision support only and requires qualified clinical review. Nothing diagnoses.
+- OCR text and OCR-derived values are UNVERIFIED and labelled as such wherever displayed.
+- OCR output must never feed the web `src/lib/engine.js` rule engine, web labs, prescriptions or risk flags.
+- Insight language stays observational: "observed trend", "potential clinical consideration", "discuss with your
+  treating clinician".
 
-## Architecture
-- React 19 SPA (frontend-only, no backend). Tailwind + shadcn/ui, recharts, sonner, react-router 7.
-- Layout: persistent left sidebar (DialyGo brand, role modules, active highlight, collapsible, mobile sheet) + top bar
-  (home icon, breadcrumb, patient search, notifications, profile menu with demo role switcher and logout) + content area.
-- `src/config/nav.js` — per-role module lists and breadcrumbs
-- `src/components/layout/AppLayout.js` — shell chrome
-- `src/context/AppContext.js` — ROLES, role-aware login, switchRole, active patient, session drafts, sign-off, uploads, engine runs, WhatsApp log
-- `src/lib/engine.js` — rule engine: `rangeOf`, `trendOf`, `contextFor`, `buildInsight` (attention points, risk flags, session tuning, access status, vascular trend, Plan Now / Plan Next)
-- `src/data/mockData.js` (3 patients, full longitudinal evidence) and `src/data/adminData.js` (users, ingestion, integrations, fleet, audit, roadmap)
-- `src/components/CoreEngineRunner.js` — 8-step visible consolidation run
-- Reused tab components: `OverviewTab`, `VascularTab`, `HistoryTab`, `SessionTab` (telemetry), `ReportTab`
+## 4. Architecture
+```
+React (web, unchanged)        React Native / Expo (/mobile)
+            \                        /
+             \      HTTPS REST      /
+              ---->  FastAPI  <-----
+                      |    |
+      SQLAlchemy + Alembic  MongoDB (Motor)
+              |                  |
+        PostgreSQL (prod)   medical_documents
+        SQLite (local dev)  ocr_results
+                            clinical_insights
+                            documents / ocr_jobs (legacy web)
+                      |
+            storage.py (local disk today) + ocr.py (PyMuPDF/Tesseract) + classifier.py
+```
 
-## Roles & modules
-- **Operator** (primary): Home, Patient Search, Pre-Session Review, Current Session, Patient History, Vascular Access, Machine Insights, Procedure Support, Session Reports. 12-step workflow strip; machine insights withheld until clinician approval.
-- **Doctor**: Home, Patients, Patient 360°, Clinical History, Dialysis History, Vascular Access, Core Analysis, Reports, Clinical Review (approve / return for review).
-- **Patient / Guest**: Home, My Health, Upload Data (mock), My Reports, Dialysis Overview, Medical History, Profile (mock OTP, KYC, consent, missing-data completion).
-- **Admin**: Home, Users & Profiles, Patients, Doctors, Operators, Data Ingestion, Data Integration, Historical Data, Machine Insights, Reports, Settings.
-- Shared: Future Roadmap page, everything labelled "Future Release – Not Available in Phase I".
+### Backend layout
+- `core/config.py` (env + load_dotenv), `core/sql.py` (async engine/session), `core/migrate.py` (alembic on startup),
+  `core/db.py` (Mongo collections + serialisers)
+- `models/sql_models.py` — the 11 approved tables, `models/types.py` — portable GUID / JSONB
+- `migrations/` — Alembic (async env), `scripts/seed_mobile.py` — idempotent demo seed
+- `routers/` — `auth.py`, `patient.py`, `reports.py`, `insights.py`, `doctor.py`, `deps.py`, `documents.py` (legacy web)
+- `services/` — `security.py`, `otp.py`, `logs.py`, `extraction.py`, `insights.py`, `report_pipeline.py`,
+  `ocr.py`, `storage.py`, `classifier.py`
 
-## Prescription report sections
-1 Session tuning recommendation (Decision Support Recommendation label) · 2 Access status check · 3 Vascular condition trend ·
-4 Risk flags · 5a Plan Now · 5b Plan Next · 6 Clinician sign-off (Approved / Returned for Review, timestamped).
+### Mobile layout (`/mobile`)
+`app/` (expo-router: `index` splash, `auth/login|otp|register|onboarding-upload`, `patient/` tabs,
+`reports/upload|[id]`, `doctor/` tabs, `doctor-patient/[id]`, `notifications`, `privacy`, `edit-profile`,
+`+not-found`), `components/`, `services/`, `hooks/`, `store/`, `theme/`, `types/`.
 
-## Implemented
-- 2026-06-19 — Phase-I MVP: DPDP login, worklist, pre-dialysis dashboard, vascular timeline, historical evidence, session capture with historical-range context, simulated telemetry, rule-based prescription report, sign-off gate, MOCKED WhatsApp dispatch. Verified 18/18.
-- 2026-06-20 — Role-based restructure: sidebar/topbar SaaS shell, four role workspaces, role isolation, demo role switcher, operator 12-step pre-session workflow, visible core-engine run, doctor clinical review approve/return propagating to operator machine insights, patient portal, admin modules, Future Roadmap. Verified 26/27.
-- 2026-06-20 (later) — **DialyGo rebrand + visual system**: app renamed DialyGo → DialyGo; theme aligned to dialygo.in (navy #0A3D62 sidebar/gradients and headings, saffron #E48404 primary CTAs, sky tint #DBEAFE chips, dashed evidence grids, 14px rounded soft-shadow cards, Plus Jakarta Sans headings + IBM Plex Sans/Mono data). Admin split into **Dialysis Admin** (`/clinical-admin/*`: patients, doctors, operators, historical data, reports, clinical governance) and **Technical Admin** (`/tech-admin/*`: users, ingestion, integration, machine insights, historical data, settings) — five roles total. No functional or workflow changes.
+## 5. Approved database design (SOURCE OF TRUTH — do not redesign silently)
+PostgreSQL: `users, patients, doctors, doctor_patients, medical_reports, dialysis_sessions, vitals, lab_results,
+audit_logs, error_logs, otp_verifications` — implemented 1:1 from the user-supplied DBML.
+MongoDB: `medical_documents, ocr_results, clinical_insights` (mobile) and the untouched legacy web collections
+`documents`, `ocr_jobs`.
+Known deviation to resolve later: the legacy web upload flow still writes `documents`/`ocr_jobs`; the approved
+collections are used by the mobile pipeline. A migration to unify them has NOT been approved yet.
 
-- 2026-06-20 (later still) — Operator/Patient/Doctor/Reports increment: cosmetic file upload on the Operator dashboard (any file type, filename + green "Uploaded" label, file never read) that opens an "Enter Patient Details" modal (Name, Age, Gender, UHID, Diagnosis, Access Type, Access Flow, Next Session, Schedule); Submit appends ONE new patient card built from the existing card component into the shared patient list (visible in both Operator and Doctor sections) without touching the three seeded patients or any summary counter; "Run Report" on the new card only with three states (Idle → 2.5s "Analyzing..." with spinner → static report card with summary, one risk flag, one recommendation); doctor name changed everywhere to Dr. Girish Reddy; breadcrumb made functional for the Patients flow (Home > Patients > [Patient] > [Sub-page]) with clickable parent segments, other pages unchanged. Verified 13/13 by testing agent; the two flagged gaps (active-patient chip and Run Report state lost on navigation) were fixed by lifting report state into AppContext.
+## 6. Key API endpoints
+- Auth: `POST /api/auth/send-otp`, `POST /api/auth/verify-otp`, `GET /api/auth/session`, `POST /api/auth/logout`
+- Patient: `POST /api/patient/register`, `GET|PATCH /api/patient/profile`, `GET /api/patient/dashboard`
+- Reports: `POST /api/reports/upload`, `GET /api/reports`, `GET /api/reports/{id}`, `GET /api/reports/{id}/ocr`
+- Insights: `GET /api/insights`
+- Doctor: `GET /api/doctor/profile`, `GET /api/doctor/patients`, `GET /api/doctor/patients/{id}`
+- Legacy web (unchanged): `POST /api/documents`, `GET /api/documents?patient_id=`, `GET /api/documents/{id}/text`,
+  `GET /api/ocr/jobs/{jobId}`, `GET /api/health`
 
-- 2026-06-20 (final increment) — Brand logo swapped to the supplied DialyGo logo image (`/dialygo-logo.png`, used as-is, unmodified) in the sidebar header (expanded + collapsed) and on the login/workspace page, keeping existing placement/sizing/spacing; doctor name corrected everywhere to **DR. Gireesh Reddy**; new **COG (Core Objective and Goal)** field added to every patient card (seeded per patient, auto-generated for operator-added patients).
+## 7. Implemented
+- 2026-06-19 → 2026-09-01 — Web Phase-I MVP, role-based restructure, DialyGo rebrand + visual system, operator/doctor/
+  patient/admin workspaces, demo password gate (currently TEMP DISABLED on purpose), FastAPI+MongoDB OCR MVP,
+  documents rendered in the patient record, keyword medical-document classifier, logo sizing. (See git history.)
+- 2026-09-22 — **Mobile Phase 1 (Patient MVP)**:
+  - Approved 11-table relational schema via SQLAlchemy 2.0 async + Alembic; SQLite locally, PostgreSQL-ready
+    (switch by changing `DATABASE_URL`, then `alembic upgrade head`). Migrations run on backend startup.
+  - Mobile-number + mock-OTP auth (`OtpProvider` abstraction, fixed code while `OTP_DEBUG=true`, hashed OTPs,
+    5-attempt lockout, expiry), JWT bearer tokens, SecureStore on device / localStorage on web.
+  - Aadhaar identification: HMAC-SHA256 hash with a pepper, unique constraint, masked display only; duplicate
+    Aadhaar returns 409.
+  - Backend-enforced authorization: patients see only their own data; doctors only assigned patients
+    (`doctor_patients`); cross-role access returns 403/404.
+  - Report pipeline reusing the existing services: validation (`classifier.py`) → storage → MongoDB
+    `medical_documents` + `ocr_results` → PyMuPDF/Tesseract OCR → regex field extraction into `lab_results`/`vitals`
+    → PostgreSQL `medical_reports` status UPLOADED/PROCESSING/COMPLETED/FAILED/REJECTED.
+  - Rule-based mobile clinical insights (ATTENTION / MONITOR / STABLE) cached in `clinical_insights`.
+  - Audit logging (login, logout, registration, report uploaded/rejected/viewed, profile updated, doctor access) and
+    DB-backed error logging with a 1-year retention purge on startup.
+  - Expo app: splash with session restore, login, OTP, new-patient registration, previous-report onboarding upload,
+    patient dashboard, reports list with filters, upload flow (camera/gallery/PDF) with rejection handling, report
+    detail with OCR polling, insights, profile, edit profile, notifications and privacy screens, logout; custom
+    Dialygo bottom navigation with a central upload action; loading skeletons, empty, error, retry and
+    pull-to-refresh states throughout. Doctor tabs (home/patients/search/detail/profile) exist as the Phase-2 shell.
+  - Expo web export served for QA at `{REACT_APP_BACKEND_URL}/mobile/index.html`.
+  - Verified by iteration_6: 25/26 backend pytest cases and all Phase-1 mobile flows; the one CRITICAL finding
+    (seed script loaded a different Aadhaar pepper) was fixed by loading `.env` inside `core/config.py` and reseeding.
 
-- 2026-06-21 — Demo access gate added to the existing "Choose your workspace" page (no new screen): ID field label made role-neutral ("User ID"), new Password field below it, single hardcoded demo password `DialyGo2026` (constant `DEMO_PASSWORD` in AppContext) checked against the existing mock IDs per role (`validIdsByRole` built from operators / doctorsDirectory / patients / ADM-0001 / ADM-0002). Failure shows one generic inline error "Invalid ID or password."; success sets `dialygo_demo_access=true` in localStorage so the Password field is skipped for the rest of the demo session. Quick-select chips, role cards and the DPDP consent block are unchanged. No backend, no hashing — demo access control only, not real security.
-
-- 2026-06-27 — Demo password gate TEMPORARILY DISABLED (commented out, not removed) on the login page: the Password input block in `Login.js` and the password + "ID must match a known mock ID" checks in `AppContext.login()` are commented with `// TEMP DISABLED - PASSWORD CHECK - re-enable if needed`. `DEMO_PASSWORD` and `validIdsByRole` are retained for restoration. Role + any ID + DPDP consent is now sufficient to enter. Logout still clears `dialygo_demo_access`.
-
-- 2026-09-01 — **OCR MVP (first real backend)**: FastAPI + MongoDB + local-disk storage + PyMuPDF/Tesseract OCR wired into the EXISTING Patient → Upload Data screen. New backend files: `core/db.py`, `services/storage.py` (StorageBackend ABC + LocalDiskStorage), `services/ocr.py` (OcrEngine ABC + TesseractEngine), `routers/documents.py`; `server.py` gained `/api/health` and router include. Collections: `documents`, `ocr_jobs`. Endpoints: POST `/api/documents`, GET `/api/documents?patient_id=`, GET `/api/documents/{id}`, GET `/api/documents/{id}/text`, GET `/api/ocr/jobs/{jobId}`, GET `/api/health`. Async via BackgroundTasks; statuses queued→processing→processed/failed; frontend polls every ~2 s with backoff via new `src/api/client.js`. OCR text is explicitly UNVERIFIED and never touches `buildInsight()`, labs, prescriptions or risk flags. LIMITATION: local disk storage is not production-grade and is not guaranteed to survive redeployment — replace with Azure/S3 behind the same `StorageBackend` interface later.
-
-- 2026-09-01 (later) — **Documents in patient record**: uploaded documents now persist into the existing record UI. New `src/components/OcrDocuments.js` provides `useBackendDocuments(patientId)` (MongoDB is the source of truth, re-polls while any doc is processing), the single shared `OcrTextDialog` (UNVERIFIED warning, filename/type/status + text) and `BackendDocumentList` reusing the existing document-card presentation. Rendered in Historical Evidence → Documents (under the preserved mock cards) and Patient → My Reports. Upload Data now reuses the same dialog instead of its own. No backend/API/schema/storage change; rule engine, labs, prescriptions and risk flags untouched.
-
-## Backlog
-### P0 (Phase-2)
-- FastAPI backend + MongoDB/Postgres persistence, replace mock data layer
-- Real authentication per role with audit logging of DPDP consent
-- Persist sessions, sign-offs and uploads (currently in-memory)
+## 8. Backlog
+### P0
+- Supply the Neon/Supabase `DATABASE_URL` and run the migrations against real PostgreSQL (SQLite is temporary).
 ### P1
-- Object storage for real document upload/retrieval
-- Real machine telemetry ingestion and real WhatsApp + server-side PDF
-- Facility/multi-unit scoping and granular permissions
+- Phase 2 doctor experience in full: dialysis history, vitals, lab results, vascular access, timeline, richer
+  patient detail and assignment management.
+- Cloud object storage (Azure Blob / S3) behind the existing `StorageBackend` interface — local disk is not durable.
+- Human confirmation workflow before OCR-extracted values are treated as clinical data.
+- Real SMS OTP provider behind `OtpProvider`; disable `OTP_DEBUG` in production.
+- Push notifications (report processed, new insight, dialysis reminder) — architecture is prepared, not wired.
 ### P2
-- LLM/RAG narrative summaries, predictive access-dysfunction models, angiogram image analysis (all roadmap-labelled today)
+- Unify the legacy web `documents`/`ocr_jobs` collections with `medical_documents`/`ocr_results` (needs approval).
+- Migrate the web app's mock `AppContext`/localStorage state onto the real API.
+- Serve all `/mobile/*` paths from the Expo `index.html` in the dev preview so hard refreshes on in-app routes work.
+- LLM/RAG narrative summaries, predictive access-dysfunction models, angiogram image analysis.
 
-## Next tasks
-1. Define the Phase-2 API contract for patients, sessions, vascular events, labs and sign-offs
-2. Persist sign-off and session drafts so state survives reload
-3. Wire real WhatsApp/PDF dispatch once credentials are available
+## 9. Next tasks
+1. Wire real PostgreSQL once the connection string is available and re-verify.
+2. Build the Phase-2 doctor modules on the already-authorised endpoints.
+3. Replace local disk storage with cloud object storage.

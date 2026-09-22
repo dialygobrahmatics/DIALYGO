@@ -1,4 +1,5 @@
 """Mobile report endpoints."""
+import asyncio
 import hashlib
 import logging
 import uuid
@@ -51,9 +52,10 @@ async def upload_report(
     if file.content_type == "application/pdf" and not data.startswith(b"%PDF"):
         raise HTTPException(status_code=415, detail="File content does not match a PDF.")
 
-    # Medical-report validation runs before the file is stored or fully processed.
+    # Lightweight suitability check BEFORE storing the file or running full OCR.
     try:
-        verdict = get_checker().check(sample_text(data, file.content_type))
+        sample = await asyncio.to_thread(sample_text, data, file.content_type)
+        verdict = get_checker().check(sample)
     except Exception as exc:
         await log_error(service="reports.validation", exc=exc, user_id=user.id)
         verdict = {"accepted": True, "reason": "medical_document"}
