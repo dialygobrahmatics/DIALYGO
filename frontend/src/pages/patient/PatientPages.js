@@ -130,8 +130,8 @@ export function PatientUpload() {
         },
       });
     } catch (e) {
-      addUpload({ id: localId, name: file.name, type: form.type, note: form.note, status: "failed", replace: true });
-      toast.error(e.message || "Upload failed.");
+      addUpload({ id: localId, name: file.name, type: form.type, note: form.note, status: "rejected", replace: true });
+      toast.error(e.message || "Upload failed.", { duration: 8000 });
     } finally {
       setBusy(false);
     }
@@ -149,6 +149,10 @@ export function PatientUpload() {
   return (
     <div className="space-y-4">
       <Panel title="Upload Data" hint="Share reports and documents with your care team. PDF, PNG, JPG or WebP up to 20 MB." testId="patient-upload-panel">
+        <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-4" data-testid="medical-only-notice">
+          ⚠️ Please upload only medical reports such as laboratory reports, clinical notes, prescriptions, discharge
+          summaries, or vascular reports.
+        </p>
         <label className="dg-dashed p-10 text-center bg-slate-50/60 block cursor-pointer">
           <Upload className="h-8 w-8 text-slate-400 mx-auto" />
           <p className="text-sm font-semibold mt-3">{busy ? "Uploading..." : "Select a report to upload, or record its details below"}</p>

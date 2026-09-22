@@ -59,8 +59,8 @@ export default function Login() {
         <div className="absolute inset-0 dg-gradient-navy opacity-80" />
         <div className="relative h-full flex flex-col justify-between p-12">
           <div className="flex items-center gap-3">
-            <div className="h-11 rounded-2xl bg-white grid place-items-center shadow-sm px-3">
-              <img src="/dialygo-logo.png" alt="DialyGo" className="h-7 w-[150px] object-contain" data-testid="login-brand-logo" />
+            <div className="h-12 rounded-2xl bg-white flex items-center justify-center shadow-sm px-4 py-2">
+              <img src="/dialygo-logo.png" alt="DialyGo" className="max-h-full w-[160px] object-contain" data-testid="login-brand-logo" />
             </div>
             <div>
               <p className="overline text-white/60">Operator Intelligence &amp; Vascular Assessment</p>

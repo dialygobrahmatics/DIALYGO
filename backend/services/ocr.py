@@ -70,3 +70,19 @@ class TesseractEngine(OcrEngine):
 
 def get_engine() -> OcrEngine:
     return TesseractEngine()
+
+
+def sample_text(data: bytes, mime_type: str, max_chars: int = 2500) -> str:
+    """Cheap sample for the suitability check: first page only, reusing the OCR engine."""
+    engine = get_engine()
+    if mime_type == "application/pdf":
+        with fitz.open(stream=data, filetype="pdf") as doc:
+            if doc.page_count == 0:
+                return ""
+            page = doc.load_page(0)
+            text = (page.get_text() or "").strip()
+            if len(text) < 20:
+                pix = page.get_pixmap(dpi=150)
+                text = engine._ocr_image(Image.open(io.BytesIO(pix.tobytes("png")))).strip()
+            return text[:max_chars]
+    return engine._ocr_image(Image.open(io.BytesIO(data))).strip()[:max_chars]

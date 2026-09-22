@@ -2,6 +2,7 @@ from fastapi import FastAPI, APIRouter
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
+import asyncio
 import os
 import logging
 from pathlib import Path
@@ -72,7 +73,18 @@ async def get_status_checks():
 
 # Include the router in the main app
 from routers.documents import router as documents_router
+from routers.auth import router as auth_router
+from routers.patient import router as patient_router
+from routers.reports import router as reports_router
+from routers.insights import router as insights_router
+from routers.doctor import router as doctor_router
+
 api_router.include_router(documents_router)
+api_router.include_router(auth_router)
+api_router.include_router(patient_router)
+api_router.include_router(reports_router)
+api_router.include_router(insights_router)
+api_router.include_router(doctor_router)
 app.include_router(api_router)
 
 app.add_middleware(
@@ -89,6 +101,23 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+@app.on_event("startup")
+async def startup_tasks():
+    """Apply the relational schema and prune error logs past the retention window."""
+    from core.migrate import upgrade_to_head
+    from services.logs import purge_expired_error_logs
+    try:
+        await asyncio.to_thread(upgrade_to_head)
+    except Exception:
+        logger.exception("Database migration failed")
+    try:
+        removed = await purge_expired_error_logs()
+        if removed:
+            logger.info("Purged %d expired error logs", removed)
+    except Exception:
+        logger.exception("Error-log retention cleanup failed")
+
 
 @app.on_event("shutdown")
 async def shutdown_db_client():

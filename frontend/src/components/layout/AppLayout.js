@@ -104,8 +104,8 @@ export default function AppLayout({ children }) {
 
   const brand = (
     <div className="flex items-center gap-2.5 min-w-0">
-      <div className="h-9 rounded-xl bg-white grid place-items-center shrink-0 shadow-sm px-2">
-        <img src="/dialygo-logo.png" alt="DialyGo" className={`object-contain ${collapsed ? "h-6 w-14" : "h-7 w-[132px]"}`} data-testid="brand-logo" />
+      <div className="h-9 rounded-xl bg-white flex items-center justify-center shrink-0 shadow-sm px-2.5 py-1">
+        <img src="/dialygo-logo.png" alt="DialyGo" className={`object-contain max-h-full ${collapsed ? "w-12" : "w-[128px]"}`} data-testid="brand-logo" />
       </div>
     </div>
   );

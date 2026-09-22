@@ -8,7 +8,8 @@ from bson.errors import InvalidId
 from fastapi import APIRouter, BackgroundTasks, File, Form, HTTPException, UploadFile
 
 from core.db import job_out, ocr_jobs, documents, document_out, utcnow
-from services.ocr import get_engine
+from services.ocr import get_engine, sample_text
+from services.classifier import get_checker
 from services.storage import get_storage
 
 logger = logging.getLogger(__name__)
@@ -82,6 +83,17 @@ async def upload_document(
         raise HTTPException(status_code=413, detail="File is larger than the 20 MB limit.")
     if file.content_type == "application/pdf" and not data.startswith(b"%PDF"):
         raise HTTPException(status_code=415, detail="File content does not match a PDF.")
+
+    # Lightweight suitability check BEFORE storing the file or running full OCR.
+    try:
+        verdict = get_checker().check(sample_text(data, file.content_type))
+    except Exception:
+        verdict = {"accepted": True, "reason": "medical_document"}  # never block on checker failure
+    if not verdict["accepted"]:
+        logger.info("Upload rejected patient=%s reason=%s", patient_id, verdict["reason"])
+        raise HTTPException(status_code=422, detail={
+            "accepted": False, "reason": verdict["reason"], "message": verdict["message"],
+        })
 
     now = utcnow()
     doc_id = ObjectId()

@@ -11,8 +11,9 @@ async function request(path, options = {}) {
     body = null;
   }
   if (!res.ok) {
-    const message = (body && (body.detail || body.message)) || `Request failed (${res.status})`;
-    throw new Error(typeof message === "string" ? message : "Request failed");
+    const d = body && body.detail;
+    const message = (d && typeof d === "object" && d.message) || (typeof d === "string" ? d : null) || (body && body.message) || `Request failed (${res.status})`;
+    throw new Error(message);
   }
   return body;
 }

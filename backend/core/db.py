@@ -7,8 +7,14 @@ from motor.motor_asyncio import AsyncIOMotorClient
 _client = AsyncIOMotorClient(os.environ["MONGO_URL"])
 db = _client[os.environ["DB_NAME"]]
 
+# Legacy web-app collections (Dialygo web Upload Data flow) — unchanged.
 documents = db["documents"]
 ocr_jobs = db["ocr_jobs"]
+
+# Approved Dialygo mobile MongoDB design.
+medical_documents = db["medical_documents"]
+ocr_results = db["ocr_results"]
+clinical_insights = db["clinical_insights"]
 
 
 def utcnow() -> datetime:
