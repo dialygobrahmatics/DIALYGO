@@ -49,3 +49,25 @@ class LocalDiskStorage(StorageBackend):
 
 def get_storage() -> StorageBackend:
     return LocalDiskStorage(os.environ.get("STORAGE_DIR", "/app/backend/storage"))
+
+
+# Uploads are grouped by media kind so the storage tree stays browsable:
+# patients/<patient-id>/<kind>/<document-id>.<ext>
+MEDIA_FOLDERS = {
+    "application/pdf": "pdf",
+    "image/png": "images",
+    "image/jpeg": "images",
+    "image/webp": "images",
+    "image/heic": "images",
+    "video/mp4": "videos",
+    "video/quicktime": "videos",
+    "audio/mpeg": "audio",
+    "audio/wav": "audio",
+}
+
+
+def media_folder(mime_type: str) -> str:
+    if mime_type in MEDIA_FOLDERS:
+        return MEDIA_FOLDERS[mime_type]
+    top = (mime_type or "").split("/")[0]
+    return {"image": "images", "video": "videos", "audio": "audio"}.get(top, "other")

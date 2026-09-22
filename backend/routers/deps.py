@@ -1,7 +1,7 @@
 """Authentication / authorization dependencies for the mobile API."""
 import uuid
 
-from fastapi import Depends, Header, HTTPException
+from fastapi import Depends, Header, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -10,20 +10,39 @@ from models.sql_models import Doctor, DoctorPatient, Patient, User
 from services.security import decode_access_token
 
 
-async def current_user(
-    authorization: str | None = Header(default=None),
-    db: AsyncSession = Depends(get_db),
-) -> User:
-    if not authorization or not authorization.lower().startswith("bearer "):
+async def _user_from_token(db: AsyncSession, token: str | None) -> User:
+    if not token:
         raise HTTPException(status_code=401, detail="Sign in to continue.")
     try:
-        payload = decode_access_token(authorization.split(" ", 1)[1].strip())
+        payload = decode_access_token(token)
     except Exception:
         raise HTTPException(status_code=401, detail="Your session has expired. Please sign in again.")
     user = await db.get(User, uuid.UUID(payload["sub"]))
     if not user or user.status != "ACTIVE":
         raise HTTPException(status_code=401, detail="Your session is no longer valid.")
     return user
+
+
+def _bearer(authorization: str | None) -> str | None:
+    if authorization and authorization.lower().startswith("bearer "):
+        return authorization.split(" ", 1)[1].strip()
+    return None
+
+
+async def current_user(
+    authorization: str | None = Header(default=None),
+    db: AsyncSession = Depends(get_db),
+) -> User:
+    return await _user_from_token(db, _bearer(authorization))
+
+
+async def current_user_flexible(
+    authorization: str | None = Header(default=None),
+    auth: str | None = Query(default=None),
+    db: AsyncSession = Depends(get_db),
+) -> User:
+    """Also accepts ?auth=<token> so <img>/<iframe>/native viewers can load protected files."""
+    return await _user_from_token(db, _bearer(authorization) or auth)
 
 
 async def current_patient(

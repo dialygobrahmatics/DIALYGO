@@ -99,6 +99,16 @@ collections are used by the mobile pipeline. A migration to unify them has NOT b
   - Verified by iteration_6: 25/26 backend pytest cases and all Phase-1 mobile flows; the one CRITICAL finding
     (seed script loaded a different Aadhaar pepper) was fixed by loading `.env` inside `core/config.py` and reseeding.
 
+- 2026-09-22 (later) — **Secure document access + media-kind storage layout**: uploads are now written to
+  `patients/<patient-id>/<kind>/<document-id>.<ext>` where kind is `pdf` / `images` / `videos` / `audio` / `other`
+  (`services/storage.py: media_folder`). New `GET /api/reports/{id}/file` streams the original document through the
+  backend with authorization enforced server-side (patient → own reports only, doctor → assigned patients only,
+  rejected reports never served, 401 without a token); it accepts the token either as a bearer header or as
+  `?auth=` so native/browser viewers that cannot send headers still work, and every access is audit-logged as
+  `REPORT_FILE_VIEWED`. Storage keys are never exposed to clients. Mobile report detail gained a Document card
+  (`components/DocumentPreview.tsx`) with an inline image preview, an open-original action for PDFs and a
+  download action. Storage remains local disk behind the unchanged `StorageBackend` interface — cloud object
+  storage was explicitly deferred by the user.
 ## 8. Backlog
 ### P0
 - Supply the Neon/Supabase `DATABASE_URL` and run the migrations against real PostgreSQL (SQLite is temporary).

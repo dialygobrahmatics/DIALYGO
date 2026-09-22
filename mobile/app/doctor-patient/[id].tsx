@@ -48,8 +48,7 @@ export default function DoctorPatientDetail() {
             <SectionTitle>Medical reports</SectionTitle>
             {data.reports.length === 0 ? (
               <EmptyState icon="file-text" title="No reports" message="This patient has not uploaded any reports yet." testID="doctor-patient-reports-empty" />
-            ) : (
-              data.reports.map((report, index) => (
+            ) : (              data.reports.map((report, index) => (
                 <ReportRow key={report.id} report={report} testID={`doctor-patient-report-${index}`} />
               ))
             )}

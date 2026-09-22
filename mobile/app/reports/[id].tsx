@@ -3,6 +3,7 @@ import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-nat
 import { useLocalSearchParams } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
 import { ScreenHeader } from '../../components/ScreenHeader';
+import { DocumentPreview } from '../../components/DocumentPreview';
 import { Card, ErrorState, Pill, SectionTitle, SkeletonCard, UnverifiedNote } from '../../components/ui';
 import { ApiError } from '../../services/api';
 import { getReportById, getReportOcr } from '../../services/reports';
@@ -97,6 +98,15 @@ export default function ReportDetail() {
                 </View>
               ))}
             </Card>
+
+            {report.status !== 'REJECTED' ? (
+              <>
+                <SectionTitle>Document</SectionTitle>
+                <Card testID="report-document-card">
+                  <DocumentPreview reportId={String(id)} mimeType={report.fileType} />
+                </Card>
+              </>
+            ) : null}
 
             {labs.length ? (
               <>

@@ -6,19 +6,19 @@ import uuid
 from datetime import datetime, timezone
 
 from bson import ObjectId
-from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, Response, UploadFile
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.db import medical_documents, ocr_results
 from core.sql import get_db
-from models.sql_models import MedicalReport, Patient, User
-from routers.deps import current_patient, current_user
+from models.sql_models import Doctor, MedicalReport, Patient, User
+from routers.deps import authorized_patient, current_patient, current_user, current_user_flexible
 from services.classifier import get_checker
 from services.logs import log_audit, log_error
 from services.ocr import sample_text
 from services.report_pipeline import ALLOWED_MIME, REPORT_TYPES, report_out, run_report_ocr, utcnow
-from services.storage import get_storage
+from services.storage import get_storage, media_folder
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/reports", tags=["reports"])
@@ -76,7 +76,7 @@ async def upload_report(
 
     doc_oid = ObjectId()
     document_id = str(doc_oid)
-    key = f"patients/{patient.id}/{document_id}.{ALLOWED_MIME[file.content_type]}"
+    key = f"patients/{patient.id}/{media_folder(file.content_type)}/{document_id}.{ALLOWED_MIME[file.content_type]}"
     try:
         get_storage().put(key, data)
     except Exception as exc:
@@ -161,6 +161,53 @@ async def get_report(
         "report": report_out(report),
         "fileMetadata": (doc or {}).get("file_metadata"),
     }
+
+
+@router.get("/{report_id}/file")
+async def get_report_file(
+    report_id: str,
+    user: User = Depends(current_user_flexible),
+    db: AsyncSession = Depends(get_db),
+):
+    """Streams the original document. Access is enforced here — storage keys are never exposed."""
+    try:
+        report = await db.get(MedicalReport, uuid.UUID(report_id))
+    except (ValueError, AttributeError):
+        raise HTTPException(status_code=404, detail="Report not found.")
+    if not report or report.status == "REJECTED":
+        raise HTTPException(status_code=404, detail="Report not found.")
+
+    patient = await db.get(Patient, report.patient_id)
+    if not patient:
+        raise HTTPException(status_code=404, detail="Report not found.")
+
+    if user.user_type == "PATIENT":
+        if patient.user_id != user.id:
+            raise HTTPException(status_code=404, detail="Report not found.")
+    else:
+        doctor = (await db.execute(select(Doctor).where(Doctor.user_id == user.id))).scalar_one_or_none()
+        if not doctor:
+            raise HTTPException(status_code=403, detail="You are not authorized to access this document.")
+        await authorized_patient(db, doctor, str(patient.id))
+
+    doc = await medical_documents.find_one({"document_id": report.document_id})
+    if not doc:
+        raise HTTPException(status_code=404, detail="This document is no longer available.")
+    try:
+        data = get_storage().get(doc["storage_reference"])
+    except Exception as exc:
+        await log_error(service="reports.file", exc=exc, user_id=user.id)
+        raise HTTPException(status_code=404, detail="This document is no longer available.")
+
+    metadata = doc.get("file_metadata") or {}
+    filename = metadata.get("file_name") or f"{report.report_type.lower()}.bin"
+    await log_audit(db, user_id=user.id, action="REPORT_FILE_VIEWED",
+                    entity_type="medical_report", entity_id=report_id)
+    return Response(
+        content=data,
+        media_type=metadata.get("mime_type") or "application/octet-stream",
+        headers={"Content-Disposition": f'inline; filename="{filename}"', "Cache-Control": "private, max-age=60"},
+    )
 
 
 @router.get("/{report_id}/ocr")
