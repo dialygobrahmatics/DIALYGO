@@ -7,11 +7,18 @@ from dotenv import load_dotenv
 # Loaded here so every entry point (API, Alembic, scripts) sees identical configuration.
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
+BACKEND_DIR = Path(__file__).resolve().parent.parent
+
 
 class Settings:
     # Structured relational store. PostgreSQL is the production target;
     # SQLite (aiosqlite) is a temporary local development database only.
-    database_url: str = os.environ.get("DATABASE_URL", "sqlite+aiosqlite:////app/backend/dialygo_dev.db")
+    # Use the repository's backend database by default. as_posix() yields a
+    # SQLAlchemy-compatible drive path on Windows (sqlite+aiosqlite:///C:/...).
+    database_url: str = os.environ.get(
+        "DATABASE_URL",
+        f"sqlite+aiosqlite:///{(BACKEND_DIR / 'dialygo_dev.db').as_posix()}",
+    )
 
     jwt_secret: str = os.environ.get("JWT_SECRET", "dialygo-dev-secret-change-in-production")
     jwt_algorithm: str = "HS256"

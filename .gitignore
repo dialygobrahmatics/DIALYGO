@@ -35,6 +35,15 @@ dist
 *token.json*
 *credentials.json*
 
+# Local secrets and environment examples
+.env
+.env.*
+*.env
+!**/.env.example
+credentials.json
+*.key
+.credentials
+
 # Logs and debug files
 npm-debug.log*
 yarn-debug.log*
@@ -76,6 +85,13 @@ agenthub/agents/youtube/db
 # Build caches
 .cache/
 
+# Runtime data: local databases, uploads, and logs
+*.db
+*.sqlite
+*.sqlite3
+/backend/storage/**
+*.log
+
 memory/test_credentials.md
 
 # Mobile development
@@ -84,11 +100,5 @@ frontend/node_modules/.cache/default-development/14.pack
 frontend/node_modules/.cache/default-development/11.pack
 frontend/node_modules/.cache/default-development/2.pack
 frontend/node_modules/.cache/default-development/0.pack
-.env
-.env.*
-*.env
-credentials.json
-*.key
-.credentials
 frontend/node_modules/.cache/default-development/1.pack
 frontend/node_modules/.cache/default-development/4.pack

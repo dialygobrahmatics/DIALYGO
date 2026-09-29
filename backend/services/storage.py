@@ -48,7 +48,8 @@ class LocalDiskStorage(StorageBackend):
 
 
 def get_storage() -> StorageBackend:
-    return LocalDiskStorage(os.environ.get("STORAGE_DIR", "/app/backend/storage"))
+    default_dir = Path(__file__).resolve().parent.parent / "storage"
+    return LocalDiskStorage(os.environ.get("STORAGE_DIR", str(default_dir)))
 
 
 # Uploads are grouped by media kind so the storage tree stays browsable:
