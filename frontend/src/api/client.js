@@ -1,7 +1,7 @@
 // DialyGo API client. Framework/DOM independent so a future React Native app can reuse it.
 const BASE = process.env.REACT_APP_BACKEND_URL;
 const API = `${BASE}/api`;
-//test comment
+
 async function request(path, options = {}) {
   const res = await fetch(`${API}${path}`, options);
   let body = null;
