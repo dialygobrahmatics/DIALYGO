@@ -1,4 +1,4 @@
-"""Alembic environment. Targets PostgreSQL in production; SQLite is used for local development."""
+"""Alembic environment. Targets PostgreSQL."""
 import asyncio
 from logging.config import fileConfig
 
@@ -31,7 +31,6 @@ def do_run_migrations(connection) -> None:
     context.configure(
         connection=connection,
         target_metadata=target_metadata,
-        render_as_batch=connection.dialect.name == "sqlite",
     )
     with context.begin_transaction():
         context.run_migrations()

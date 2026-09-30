@@ -2,13 +2,14 @@
 
 ## Run the backend locally on Windows
 
-The backend uses SQLite for local relational data and MongoDB for document, OCR,
-and clinical-insight data. MongoDB is required even when SQLite is used. Uploaded
+The backend uses PostgreSQL for relational data and MongoDB for document, OCR,
+and clinical-insight data. Both are required. Uploaded
 files are stored locally under `backend/storage` by default.
 
 ### Prerequisites
 
 - Python 3.10 or newer.
+- PostgreSQL 14+ running locally or reachable, with a database and user created.
 - MongoDB running locally or a MongoDB service you can reach. The application
   requires `MONGO_URL` and `DB_NAME`; no MongoDB credentials are included here.
 - Tesseract OCR installed for Windows and available on `PATH`. The Python
@@ -39,12 +40,10 @@ python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 ```
 
-Copy `backend/.env.example` to `backend/.env` and set `MONGO_URL` and `DB_NAME`
-for your MongoDB instance. Keep private values in `.env`; do not commit it.
-`DATABASE_URL` may be omitted: it defaults to the repository's
-`backend/dialygo_dev.db` SQLite file using a Windows-compatible path. The
-`STORAGE_DIR` setting may also be omitted; uploads default to `backend/storage`.
-Both paths can be overridden with environment variables.
+Create `backend/.env` and set `MONGO_URL`, `DB_NAME` and `DATABASE_URL`
+(e.g. `postgresql+asyncpg://dialygo:dialygo@localhost:5432/dialygo`). Keep private
+values in `.env`; do not commit it. `DATABASE_URL` has no default. The `STORAGE_DIR`
+setting may be omitted; uploads default to `backend/storage`.
 
 ### Start
 

@@ -11,14 +11,9 @@ BACKEND_DIR = Path(__file__).resolve().parent.parent
 
 
 class Settings:
-    # Structured relational store. PostgreSQL is the production target;
-    # SQLite (aiosqlite) is a temporary local development database only.
-    # Use the repository's backend database by default. as_posix() yields a
-    # SQLAlchemy-compatible drive path on Windows (sqlite+aiosqlite:///C:/...).
-    database_url: str = os.environ.get(
-        "DATABASE_URL",
-        f"sqlite+aiosqlite:///{(BACKEND_DIR / 'dialygo_dev.db').as_posix()}",
-    )
+    # Structured relational store: PostgreSQL (asyncpg). No fallback, so the
+    # app can never silently start against a different database.
+    database_url: str = os.environ["DATABASE_URL"]
 
     jwt_secret: str = os.environ.get("JWT_SECRET", "dialygo-dev-secret-change-in-production")
     jwt_algorithm: str = "HS256"
