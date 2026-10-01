@@ -1,0 +1,150 @@
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    --dg-navy: #0a3d62;
+    --dg-navy-deep: #0a2d4a;
+    --dg-navy-soft: #1b3a4b;
+    --dg-saffron: #e48404;
+    --dg-saffron-warm: #e67e22;
+    --dg-sky: #0a9de0;
+    --dg-sky-tint: #dbeafe;
+    --dg-dash: #b0c8e0;
+    --dg-page: #f5f7fa;
+}
+
+body {
+    margin: 0;
+    font-family: "IBM Plex Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: var(--dg-page);
+    color: #1b3a4b;
+}
+
+h1, h2, h3, h4 {
+    font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+    letter-spacing: -0.025em;
+    color: var(--dg-navy);
+}
+
+.font-head {
+    font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+    letter-spacing: -0.025em;
+}
+
+.metric-num {
+    font-family: "IBM Plex Mono", monospace;
+    font-variant-numeric: tabular-nums;
+}
+
+.overline {
+    text-transform: uppercase;
+    font-size: 0.6875rem;
+    letter-spacing: 0.16em;
+    font-weight: 700;
+    color: #7b8ea3;
+}
+
+/* DialyGo surface language: soft rounded cards, dashed evidence grids, saffron CTAs */
+.dg-card {
+    background: #fff;
+    border: 1px solid #e6edf4;
+    border-radius: 14px;
+    box-shadow: 0 1px 2px rgba(10, 61, 98, 0.04), 0 8px 24px -18px rgba(10, 61, 98, 0.18);
+}
+.dg-card-hover {
+    transition-property: box-shadow, border-color, transform;
+    transition-duration: 200ms;
+}
+.dg-card-hover:hover {
+    border-color: var(--dg-dash);
+    box-shadow: 0 2px 4px rgba(10, 61, 98, 0.05), 0 18px 40px -24px rgba(10, 61, 98, 0.28);
+}
+.dg-dashed {
+    border: 1.5px dashed var(--dg-dash);
+    border-radius: 14px;
+}
+.dg-stat {
+    background: #fff;
+    border: 1px solid #e6edf4;
+    border-radius: 12px;
+}
+.dg-chip-navy {
+    background: var(--dg-sky-tint);
+    color: var(--dg-navy);
+    border: 1px solid #c3dcf7;
+}
+.dg-gradient-navy {
+    background: linear-gradient(135deg, #0a2d4a 0%, #0d3d6b 50%, #0a4a6b 100%);
+}
+.dg-text-navy { color: var(--dg-navy); }
+.dg-text-saffron { color: var(--dg-saffron-warm); }
+
+@keyframes durise-flash {
+    0% { background-color: #fef3c7; }
+    100% { background-color: transparent; }
+}
+.telemetry-flash {
+    animation: durise-flash 900ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .telemetry-flash { animation: none; }
+    * { transition-duration: 0.001ms !important; }
+}
+
+@media print {
+    .no-print { display: none !important; }
+    body { background: #fff; }
+}
+
+@layer base {
+    :root {
+        --background: 210 33% 97%;
+        --foreground: 202 47% 20%;
+        --card: 0 0% 100%;
+        --card-foreground: 202 47% 20%;
+        --popover: 0 0% 100%;
+        --popover-foreground: 202 47% 20%;
+        --primary: 205 81% 21%;
+        --primary-foreground: 0 0% 100%;
+        --secondary: 210 40% 96%;
+        --secondary-foreground: 205 81% 21%;
+        --muted: 210 40% 96%;
+        --muted-foreground: 209 15% 50%;
+        --accent: 214 95% 93%;
+        --accent-foreground: 205 81% 21%;
+        --destructive: 0 72% 51%;
+        --destructive-foreground: 0 0% 100%;
+        --border: 210 40% 92%;
+        --input: 210 40% 92%;
+        --ring: 205 81% 21%;
+        --chart-1: 205 81% 30%;
+        --chart-2: 160 84% 39%;
+        --chart-3: 32 92% 45%;
+        --chart-4: 0 72% 51%;
+        --chart-5: 197 92% 46%;
+        --radius: 0.75rem;
+    }
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+    body {
+        @apply bg-background text-foreground;
+    }
+    :focus-visible {
+        @apply outline-none ring-2 ring-blue-600 ring-offset-1;
+    }
+}
+
+@layer base {
+    [data-debug-wrapper="true"] {
+        display: contents !important;
+    }
+}
