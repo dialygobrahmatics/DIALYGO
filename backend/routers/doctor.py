@@ -9,6 +9,7 @@ from routers.deps import authorized_patient, current_doctor, current_user
 from routers.insights import insights_for_patient
 from routers.patient import clinical_overview, patient_out
 from services.logs import log_audit
+from services.users import mask_mobile
 
 router = APIRouter(prefix="/doctor", tags=["doctor"])
 
@@ -18,7 +19,7 @@ async def doctor_profile(doctor: Doctor = Depends(current_doctor), user: User = 
     return {
         "doctor": {"id": str(doctor.id), "name": doctor.name, "specialization": doctor.specialization,
                    "registrationNumber": doctor.registration_number, "status": doctor.status},
-        "account": {"mobileNumber": f"XXXXXX{user.mobile_number[-4:]}", "userType": user.user_type},
+        "account": {"mobileNumber": mask_mobile(user.mobile_number), "userType": user.user_type},
     }
 
 

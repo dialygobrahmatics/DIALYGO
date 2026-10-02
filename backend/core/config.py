@@ -26,6 +26,10 @@ class Settings:
     # Development only: return the OTP in the API response. MUST be false in production.
     otp_debug: bool = os.environ.get("OTP_DEBUG", "true").lower() == "true"
     otp_fixed_code: str = os.environ.get("OTP_FIXED_CODE", "123456")
+    # How OTPs are delivered: mock (fixed code, returned in the response), log (random code printed
+    # to the backend log - development only) or random (real code, delivery not implemented yet).
+    # Defaults keep the previous behaviour: mock while OTP_DEBUG=true, random otherwise.
+    otp_provider: str = os.environ.get("OTP_PROVIDER", "mock" if otp_debug else "random").lower()
 
     error_log_retention_days: int = int(os.environ.get("ERROR_LOG_RETENTION_DAYS", "365"))
 

@@ -10,7 +10,7 @@ import { levelColor } from "@/lib/engine";
 import { whatsappTemplates } from "@/data/mockData";
 
 export default function ReportTab({ patient, insight }) {
-  const { operator, getDraft, updateDraft, whatsappLog, addWhatsapp } = useApp();
+  const { user: operator, getDraft, updateDraft, whatsappLog, addWhatsapp } = useApp();
   const draft = getDraft(patient);
   const signOff = draft.signOff;
   const [phone, setPhone] = useState(patient.phone);

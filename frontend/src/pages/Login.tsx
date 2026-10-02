@@ -1,22 +1,26 @@
-import { useState } from "react";
+import { FormEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ShieldCheck, Lock, ChevronRight, Fingerprint } from "lucide-react";
-import { useApp, ROLES } from "@/context/AppContext";
-import { operators } from "@/data/mockData";
+import { useAuth } from "@/hooks/useAuth";
+import { ROLES, ROLE_TO_USER_TYPE } from "@/config/roles";
+import useApi from "@/hooks/useApi";
+import { AuthControllers } from "@/controllers/AuthControllers";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import type { Role, SendOtpResponse } from "@/types";
 
-const roleHints = {
-  operator: { label: "User ID", placeholder: "OPR-1041" },
-  doctor: { label: "User ID", placeholder: "DOC-0071" },
-  patient: { label: "User ID", placeholder: "DUR-PT-00218" },
-  dialysisadmin: { label: "User ID", placeholder: "ADM-0002" },
-  techadmin: { label: "User ID", placeholder: "ADM-0001" },
+const ID_PLACEHOLDERS: Record<Role, string> = {
+  operator: "OPR-1041",
+  doctor: "DOC-0071",
+  patient: "DUR-PT-00218",
+  dialysisadmin: "ADM-0002",
+  techadmin: "ADM-0001",
 };
 
-const demoIds = {
-  operator: operators.map((o) => o.id),
+// Seeded development accounts (backend/scripts/seed_mobile.py). Shown only outside production builds.
+const DEV_USER_IDS: Record<Role, string[]> = {
+  operator: ["OPR-1041", "OPR-2276", "OPR-3390"],
   doctor: ["DOC-0071", "DOC-0088"],
   patient: ["DUR-PT-00218", "DUR-PT-00341"],
   dialysisadmin: ["ADM-0002"],
@@ -24,28 +28,40 @@ const demoIds = {
 };
 
 export default function Login() {
-  const { login, demoAccess } = useApp();
+  const { startSession } = useAuth();
   const navigate = useNavigate();
-  const [role, setRole] = useState("operator");
-  const [id, setId] = useState("");
-  const [password, setPassword] = useState("");
+  const [role, setRole] = useState<Role>("operator");
+  const [userCode, setUserCode] = useState("");
+  const [otp, setOtp] = useState("");
+  const [otpInfo, setOtpInfo] = useState<SendOtpResponse | null>(null); // set once an OTP has been sent
   const [consent, setConsent] = useState(false);
   const [error, setError] = useState("");
-  const [otpStage, setOtpStage] = useState(false);
-  const [otp, setOtp] = useState("");
+  const [isSending, sendOtpApi] = useApi(AuthControllers.sendOtp);
+  const [isVerifying, verifyOtpApi] = useApi(AuthControllers.verifyOtp);
+  const busy = isSending || isVerifying;
 
-  const submit = (e) => {
+  const resetOtp = () => { setOtpInfo(null); setOtp(""); };
+
+  // Local validation shows inline; server errors and success messages are toasts raised by useApi.
+  const requestOtp = async () => {
+    if (!userCode.trim()) return setError("Enter your user ID to continue.");
+    const result = await sendOtpApi(userCode, ROLE_TO_USER_TYPE[role]);
+    if (result.ok) { setOtpInfo(result.data); setError(""); }
+  };
+
+  const verify = async () => {
+    if (!consent) return setError("DPDP Act consent acknowledgement is required.");
+    if (!/^\d{6}$/.test(otp.trim())) return setError("Enter the 6-digit verification code.");
+    const result = await verifyOtpApi(userCode, otp, ROLE_TO_USER_TYPE[role]);
+    if (!result.ok) return;
+    const user = startSession(result.data);
+    if (!user) return setError("This account type is not supported on the web app.");
+    navigate(ROLES[user.role].home);
+  };
+
+  const submit = (e: FormEvent) => {
     e.preventDefault();
-    if (role === "patient" && !otpStage) {
-      if (!id.trim()) return setError("Enter your registered mobile or DialyGo ID.");
-      setOtpStage(true);
-      setError("");
-      return;
-    }
-    if (role === "patient" && otp.trim() !== "123456") return setError("Enter the mock OTP 123456 to continue.");
-    const res = login(role, id, consent, password);
-    if (!res.ok) return setError(res.error);
-    navigate(res.home);
+    return otpInfo ? verify() : requestOtp();
   };
 
   return (
@@ -88,7 +104,7 @@ export default function Login() {
 
           <p className="overline">Sign in</p>
           <h1 className="font-head text-3xl sm:text-4xl font-extrabold mt-2">Choose your workspace</h1>
-          <p className="text-sm text-slate-500 mt-3">Five role-based experiences. Roles can also be switched from the profile menu for demonstration.</p>
+          <p className="text-sm text-slate-500 mt-3">Pick your role and enter your user ID. We send a one-time code to your registered mobile number and email.</p>
 
           <div className="grid grid-cols-2 gap-2 mt-6" data-testid="role-selector">
             {Object.values(ROLES).map((r) => (
@@ -96,7 +112,7 @@ export default function Login() {
                 key={r.id}
                 type="button"
                 data-testid={`role-option-${r.id}`}
-                onClick={() => { setRole(r.id); setId(""); setOtp(""); setError(""); setOtpStage(false); }}
+                onClick={() => { setRole(r.id); setUserCode(""); setError(""); resetOtp(); }}
                 className={`text-left rounded-xl border px-3 py-2.5 transition-colors ${role === r.id ? "border-navy bg-navy-tint" : "border-slate-200 hover:border-navy/40"}`}
               >
                 <span className="block text-sm font-bold text-navy">{r.label}</span>
@@ -106,49 +122,40 @@ export default function Login() {
           </div>
 
           <label className="block mt-6">
-            <span className="overline">{roleHints[role].label}</span>
+            <span className="overline">User ID</span>
             <Input
               data-testid="login-id-input"
-              value={id}
-              onChange={(e) => { setId(e.target.value); setError(""); }}
-              placeholder={roleHints[role].placeholder}
+              value={userCode}
+              onChange={(e) => { setUserCode(e.target.value); setError(""); resetOtp(); }}
+              placeholder={ID_PLACEHOLDERS[role]}
               className="mt-2 h-12 text-base metric-num tracking-wider"
               autoComplete="off"
             />
-
-          {/* TEMP DISABLED - PASSWORD CHECK - re-enable if needed
-          {!demoAccess && (
-            <label className="block mt-4">
-              <span className="overline">Password</span>
-              <Input
-                data-testid="login-password-input"
-                type="password"
-                value={password}
-                onChange={(e) => { setPassword(e.target.value); setError(""); }}
-                placeholder="Demo access password"
-                className="mt-2 h-12 text-base"
-                autoComplete="off"
-              />
-            </label>
-          )}
-          */}
-
           </label>
 
-          <div className="mt-3 flex flex-wrap gap-2">
-            {demoIds[role].map((d) => (
-              <button key={d} type="button" data-testid={`demo-id-${d}`} onClick={() => { setId(d); setError(""); }}
-                className="text-xs metric-num px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white hover:border-navy hover:text-navy transition-colors">
-                {d}
-              </button>
-            ))}
-          </div>
+          {process.env.NODE_ENV !== "production" && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {DEV_USER_IDS[role].map((d) => (
+                <button key={d} type="button" data-testid={`demo-id-${d}`} onClick={() => { setUserCode(d); setError(""); resetOtp(); }}
+                  className="text-xs metric-num px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white hover:border-navy hover:text-navy transition-colors">
+                  {d}
+                </button>
+              ))}
+            </div>
+          )}
 
-          {role === "patient" && otpStage && (
+          {otpInfo && (
             <div className="mt-4 rounded-xl border border-[#c3dcf7] bg-navy-tint p-4">
-              <p className="overline text-navy">Mock OTP verification</p>
-              <p className="text-xs text-navy/80 mt-1">Use OTP <span className="metric-num font-bold">123456</span>. No message is sent in the prototype.</p>
-              <Input data-testid="login-otp-input" value={otp} onChange={(e) => { setOtp(e.target.value); setError(""); }} placeholder="123456" className="mt-3 metric-num h-11" />
+              <p className="overline text-navy">Verification code</p>
+              <p className="text-xs text-navy/80 mt-1">
+                A code was sent to <span className="metric-num font-bold">{otpInfo.mobileNumber}</span>
+                {otpInfo.email && <> and <span className="font-bold">{otpInfo.email}</span></>}.
+                {otpInfo.channel === "log" && " Development build: the code is printed in the backend log."}
+              </p>
+              <Input data-testid="login-otp-input" value={otp} onChange={(e) => { setOtp(e.target.value); setError(""); }} placeholder="6-digit code" inputMode="numeric" maxLength={6} className="mt-3 metric-num h-11" autoFocus />
+              <button type="button" onClick={requestOtp} disabled={busy} className="mt-2 text-xs font-semibold text-navy underline disabled:opacity-50" data-testid="login-resend-otp">
+                Resend code
+              </button>
             </div>
           )}
 
@@ -168,13 +175,13 @@ export default function Login() {
 
           {error && <p data-testid="login-error" className="mt-4 text-sm font-medium text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>}
 
-          <Button data-testid="login-submit-btn" type="submit" className="w-full h-12 mt-6 text-base font-bold bg-saffron hover:bg-saffron-warm text-white rounded-xl">
-            {role === "patient" && !otpStage ? "Send mock OTP" : "Enter workspace"} <ChevronRight className="h-4 w-4 ml-1" />
+          <Button data-testid="login-submit-btn" type="submit" disabled={busy} className="w-full h-12 mt-6 text-base font-bold bg-saffron hover:bg-saffron-warm text-white rounded-xl">
+            {busy ? "Please wait…" : otpInfo ? "Verify & enter workspace" : "Send OTP"} <ChevronRight className="h-4 w-4 ml-1" />
           </Button>
 
           <div className="mt-6 space-y-2">
             <p className="text-xs text-slate-500 flex items-start gap-1.5">
-              <Lock className="h-3.5 w-3.5 mt-0.5 shrink-0" /> Phase-I demonstration build using synthetic JSON data. No live patient records are stored on this device.
+              <Lock className="h-3.5 w-3.5 mt-0.5 shrink-0" /> Clinical screens still use synthetic JSON data in this phase. Sign-in and sessions are real.
             </p>
             <p className="text-xs text-slate-500 flex items-start gap-1.5">
               <Fingerprint className="h-3.5 w-3.5 mt-0.5 shrink-0" /> Biometric, fingerprint and face-recognition sign-in are future releases, shown here as roadmap capabilities only.

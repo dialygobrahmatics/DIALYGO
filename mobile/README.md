@@ -74,4 +74,4 @@ theme/ types/        design tokens and shared types
 | Doctor (DR. Gireesh Reddy) | 9876500001 | 123456 |
 | New patient | any other valid 10-digit number | 123456 |
 
-The OTP is mocked while `OTP_DEBUG=true` on the backend. Disable it in production.
+The fixed OTP `123456` requires `OTP_PROVIDER=mock` in `backend/.env` (the dev setup currently uses `log`, which prints a random code in the backend log instead). Disable it in production.

@@ -63,7 +63,8 @@
   "scripts": {
     "start": "craco start",
     "build": "craco build",
-    "test": "craco test"
+    "test": "craco test",
+    "typecheck": "tsc --noEmit"
   },
   "browserslist": {
     "production": [
@@ -82,7 +83,10 @@
     "@craco/craco": "7.1.0",
     "@emergentbase/visual-edits": "https://assets.emergent.sh/npm/emergentbase-visual-edits-1.0.13.tgz",
     "@eslint/js": "9.23.0",
+    "@types/jest": "27.5.2",
     "@types/lodash": "4.17.24",
+    "@types/react": "19.0.10",
+    "@types/react-dom": "19.0.4",
     "ajv": "^8.17.1",
     "ajv-keywords": "^5.1.0",
     "autoprefixer": "10.4.20",
@@ -94,7 +98,8 @@
     "eslint-plugin-react-hooks": "5.2.0",
     "globals": "15.15.0",
     "postcss": "8.5.10",
-    "tailwindcss": "3.4.17"
+    "tailwindcss": "3.4.17",
+    "typescript": "5.6.3"
   },
   "resolutions": {
     "react-router": "7.15.1",
