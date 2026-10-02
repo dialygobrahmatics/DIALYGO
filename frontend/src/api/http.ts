@@ -3,7 +3,9 @@
 import axios, { AxiosError, AxiosResponse } from "axios";
 import { isJwtExpired } from "@/lib/jwt";
 
-const BASE_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:8000";
+const BASE_URL = process.env.REACT_APP_API_BASE_URL !== undefined
+  ? process.env.REACT_APP_API_BASE_URL
+  : process.env.REACT_APP_BACKEND_URL || "http://localhost:8000";
 
 const TOKEN_KEY = "dialygo_access_token";
 
@@ -34,7 +36,7 @@ export class ApiError extends Error {
   }
 }
 
-export const http = axios.create({ baseURL: `${BASE_URL}/api`, timeout: 30000 });
+export const http = axios.create({ baseURL: `${BASE_URL.replace(/\/$/, "")}/api`, timeout: 30000 });
 
 http.interceptors.request.use((config) => {
   const token = tokenStore.get();
