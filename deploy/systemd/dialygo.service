@@ -1,0 +1,27 @@
+[Unit]
+Description=Dialygo FastAPI application
+Requires=dialygo-migrate.service
+After=network.target postgresql.service mongod.service dialygo-migrate.service
+Wants=postgresql.service mongod.service
+
+[Service]
+Type=simple
+User=dialygo
+Group=dialygo
+WorkingDirectory=/opt/dialygo/app/backend
+EnvironmentFile=/etc/dialygo/dialygo.env
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=/opt/dialygo/venv/bin/python -m uvicorn server:app --host 127.0.0.1 --port 8000
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+UMask=0027
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/dialygo/uploads
+
+[Install]
+WantedBy=multi-user.target

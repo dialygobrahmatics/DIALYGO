@@ -1,0 +1,20 @@
+[Unit]
+Description=Apply Dialygo PostgreSQL migrations
+After=network.target postgresql.service mongod.service
+Wants=postgresql.service mongod.service
+Before=dialygo.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+User=dialygo
+Group=dialygo
+WorkingDirectory=/opt/dialygo/app/backend
+EnvironmentFile=/etc/dialygo/dialygo.env
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=/opt/dialygo/venv/bin/python -m alembic upgrade head
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+UMask=0027
