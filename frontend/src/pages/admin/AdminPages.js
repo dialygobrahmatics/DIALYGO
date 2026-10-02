@@ -1,4 +1,5 @@
 import { useState } from "react";
+import UserWelcome from "@/components/UserWelcome";
 import { toast } from "sonner";
 import { Database, Plug, Settings as SettingsIcon, ShieldCheck, Users, Activity, Lock } from "lucide-react";
 import { Panel, Metric } from "@/components/Bits";
@@ -32,6 +33,7 @@ export function DialysisAdminHome() {
       <div className="dg-card p-6">
         <p className="overline">Clinical unit administration</p>
         <h1 className="font-head text-3xl font-extrabold mt-1">Dialysis Admin Console</h1>
+        <UserWelcome />
         <p className="text-sm text-slate-500 mt-3 max-w-3xl">Oversee the dialysis service: patient roster, clinician and operator coverage, historical evidence completeness and report governance. Mock data only.</p>
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-5">
           <div className="dg-stat px-4 py-3"><p className="overline">Patients</p><p className="metric-num text-2xl font-semibold mt-1" data-testid="dialysisadmin-stat-patients">{patients.length}</p></div>
@@ -68,6 +70,7 @@ export function AdminHome() {
       <div className="dg-card p-6">
         <p className="overline">Platform &amp; systems</p>
         <h1 className="font-head text-3xl font-extrabold mt-1">Technical Admin Console</h1>
+        <UserWelcome />
         <p className="text-sm text-slate-500 mt-3 max-w-3xl">Manage users and roles, monitor data ingestion and integration interfaces, device fleet telemetry and platform settings for the DialyGo Phase-I prototype. All data shown is mock data.</p>
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-5">
           <div className="dg-stat px-4 py-3"><p className="overline">Users</p><p className="metric-num text-2xl font-semibold mt-1" data-testid="admin-stat-users">{platformUsers.length}</p></div>

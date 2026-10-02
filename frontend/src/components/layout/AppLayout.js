@@ -3,7 +3,8 @@ import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   Activity, Bell, ChevronLeft, ChevronRight, Home, LogOut, Search, ShieldCheck, ChevronDown, UserRound, Rocket,
 } from "lucide-react";
-import { useApp, ROLES } from "@/context/AppContext";
+import { useApp } from "@/context/AppContext";
+import { ROLES } from "@/config/roles";
 import { navByRole, commonNav, pageTitles } from "@/config/nav";
 import { patients } from "@/data/mockData";
 import { Button } from "@/components/ui/button";
@@ -61,7 +62,7 @@ const SidebarLinks = ({ role, onNavigate, collapsed }) => (
 );
 
 export default function AppLayout({ children }) {
-  const { user, role, logout, switchRole, selectedPatientId, setSelectedPatientId, customPatients } = useApp();
+  const { user, role, logout, selectedPatientId, setSelectedPatientId, customPatients } = useApp();
   const navigate = useNavigate();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
@@ -99,8 +100,6 @@ export default function AppLayout({ children }) {
     }
   }
   const currentTitle = crumbs[crumbs.length - 1].label;
-
-  const onSwitchRole = (r) => navigate(switchRole(r));
 
   const brand = (
     <div className="flex items-center gap-2.5 min-w-0">
@@ -252,17 +251,10 @@ export default function AppLayout({ children }) {
                   <p className="text-xs text-slate-500 metric-num">{user?.id} · {user?.title}</p>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuLabel className="overline">Demo role switcher</DropdownMenuLabel>
-                {Object.values(ROLES).map((r) => (
-                  <DropdownMenuItem key={r.id} data-testid={`switch-role-${r.id}`} onClick={() => onSwitchRole(r.id)}>
-                    <span className={role === r.id ? "font-bold text-navy" : ""}>{r.label}</span>
-                  </DropdownMenuItem>
-                ))}
-                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => navigate("/roadmap")} data-testid="profile-roadmap-item">
                   <Rocket className="h-4 w-4 mr-2" /> Future roadmap
                 </DropdownMenuItem>
-                <DropdownMenuItem data-testid="logout-btn" onClick={() => { logout(); navigate("/"); }}>
+                <DropdownMenuItem data-testid="logout-btn" onClick={async () => { await logout(); navigate("/"); }}>
                   <LogOut className="h-4 w-4 mr-2" /> Logout
                 </DropdownMenuItem>
               </DropdownMenuContent>

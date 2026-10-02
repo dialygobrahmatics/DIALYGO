@@ -43,10 +43,10 @@ React (web, unchanged)        React Native / Expo (/mobile)
 ### Backend layout
 - `core/config.py` (env + load_dotenv), `core/sql.py` (async engine/session), `core/migrate.py` (alembic on startup),
   `core/db.py` (Mongo collections + serialisers)
-- `models/sql_models.py` — the 11 approved tables, `models/types.py` — portable GUID / JSONB
+- `models/sql_models.py` — the 11 approved tables plus `staff_profiles` (see §5), `models/types.py` — portable GUID / JSONB
 - `migrations/` — Alembic (async env), `scripts/seed_mobile.py` — idempotent demo seed
 - `routers/` — `auth.py`, `patient.py`, `reports.py`, `insights.py`, `doctor.py`, `deps.py`, `documents.py` (legacy web)
-- `services/` — `security.py`, `otp.py`, `logs.py`, `extraction.py`, `insights.py`, `report_pipeline.py`,
+- `services/` — `security.py`, `otp.py`, `users.py` (user-code generation), `logs.py`, `extraction.py`, `insights.py`, `report_pipeline.py`,
   `ocr.py`, `storage.py`, `classifier.py`
 
 ### Mobile layout (`/mobile`)
@@ -57,14 +57,24 @@ React (web, unchanged)        React Native / Expo (/mobile)
 ## 5. Approved database design (SOURCE OF TRUTH — do not redesign silently)
 PostgreSQL: `users, patients, doctors, doctor_patients, medical_reports, dialysis_sessions, vitals, lab_results,
 audit_logs, error_logs, otp_verifications` — implemented 1:1 from the user-supplied DBML.
+Approved deviations (2026-10-01, driven by the fixed web UI plan; migrations `b3f1c2d4e5a6`, `c7d2e9a1f4b3`):
+- `users.user_code` (unique, NOT NULL) — human-facing login ID, e.g. `DUR-PT-00218`, `DOC-0071`, `OPR-0001`, `ADM-0001`.
+- `users.email` (unique, nullable, stored lower-case).
+- `users.user_type` is now `PATIENT | DOCTOR | OPERATOR | DIALYSIS_ADMIN | TECH_ADMIN`;
+  `users.status` may be `ACTIVE | PENDING_APPROVAL | ...` (only `ACTIVE` users can sign in).
+- New table `staff_profiles(user_id, name, designation, unit)` for operator and admin accounts.
+- Profile master details live on `users` (migration `d4a8b1c9e7f2`): `blood_group`, `emergency_contact` (free text, name and
+  number), `known_allergies`, `occupation`, the consent booleans `consent_data_sharing`, `consent_privacy_notice`,
+  `consent_research` (default false) and `consents_updated_at`.
 MongoDB: `medical_documents, ocr_results, clinical_insights` (mobile) and the untouched legacy web collections
 `documents`, `ocr_jobs`.
 Known deviation to resolve later: the legacy web upload flow still writes `documents`/`ocr_jobs`; the approved
 collections are used by the mobile pipeline. A migration to unify them has NOT been approved yet.
 
 ## 6. Key API endpoints
-- Auth: `POST /api/auth/send-otp`, `POST /api/auth/verify-otp`, `GET /api/auth/session`, `POST /api/auth/logout`
-- Patient: `POST /api/patient/register`, `GET|PATCH /api/patient/profile`, `GET /api/patient/dashboard`
+- Auth: `POST /api/auth/send-otp`, `POST /api/auth/verify-otp`, `POST /api/auth/signup`, `GET /api/auth/session`,
+  `POST /api/auth/logout` — see §6.1
+- Patient: `POST /api/patient/register`, `GET|PATCH /api/patient/profile` (§6.2), `GET /api/patient/dashboard`
 - Reports: `POST /api/reports/upload`, `GET /api/reports`, `GET /api/reports/{id}`, `GET /api/reports/{id}/ocr`
 - Insights: `GET /api/insights`
 - Doctor: `GET /api/doctor/profile`, `GET /api/doctor/patients`, `GET /api/doctor/patients/{id}`
@@ -109,10 +119,49 @@ collections are used by the mobile pipeline. A migration to unify them has NOT b
   (`components/DocumentPreview.tsx`) with an inline image preview, an open-original action for PDFs and a
   download action. Storage remains local disk behind the unchanged `StorageBackend` interface — cloud object
   storage was explicitly deferred by the user.
+### 6.1 Auth flows
+- **Sign in** (`send-otp` → `verify-otp`): `user_code` (web) or mobile number (mobile app), plus OTP. A `user_code`
+  is resolved to the stored mobile number/email; unknown codes get 404. Returns `{accessToken, userType, registrationRequired,
+  profile}`. Only `ACTIVE` users can sign in (403 otherwise). *Current behaviour:* an unknown mobile number is
+  still auto-created as a bare `PATIENT` (used by the mobile app); login lookup by `user_code`/email is not built yet.
+- **Sign up** (`POST /api/auth/signup`): first call `send-otp` for the mobile number, then post
+  `{user_type, name, mobile_number, otp, email?}` plus role fields:
+  `PATIENT` → `aadhaar_number` (required), `date_of_birth`, `gender`;
+  `DOCTOR` → `registration_number` (required), `specialization`;
+  `OPERATOR | DIALYSIS_ADMIN | TECH_ADMIN` → `designation`, `unit`.
+  Any type may also send the profile master details and consents from §6.2 (`blood_group`, `emergency_contact`,
+  `known_allergies`, `occupation`, `consent_data_sharing`, `consent_privacy_notice`, `consent_research`); they use the same
+  validation as `PATCH /patient/profile` and are checked before the OTP is consumed.
+  The OTP proves ownership of the mobile number. Response `201` includes `userId`, `userCode`, `userType`, `status`.
+  - `PATIENT` is created `ACTIVE` and the response also carries `accessToken` + profile context.
+  - All other types are created `PENDING_APPROVAL` with no token; they cannot sign in until an administrator sets
+    `users.status = 'ACTIVE'` (no admin approval endpoint exists yet — currently done in the database).
+  - Errors: 400 invalid fields/OTP, 409 duplicate mobile / email / Aadhaar / registration number,
+    422 unknown `user_type`.
+  - Audited as `SIGNUP`.
+
+### 6.2 Patient profile API
+`GET /api/patient/profile` returns everything the profile page needs:
+`{patient: {id, patientIdentifier, name, dateOfBirth, age, gender, aadhaarMasked, createdAt},
+account: {userCode, mobileNumber, email, userType, lastLoginAt} (the owner's own, unmasked),
+details: {bloodGroup, emergencyContact, knownAllergies, occupation},
+consents: {dataSharing, privacyNotice, research, updatedAt}}`.
+`PATCH /api/patient/profile` takes any subset of `name, date_of_birth, gender, email, mobile_number,
+blood_group, emergency_contact, known_allergies, occupation, consent_data_sharing, consent_privacy_notice, consent_research` (omitted = unchanged,
+empty string clears a text detail) and returns the same shape. `blood_group` must be A/B/AB/O with +/-; text fields have
+length limits (400 on violation). Consent changes stamp `consents_updated_at` and are audit-logged as `CONSENT_UPDATED`
+(other edits as `PROFILE_UPDATED`). `email` is stored lower-case, unique (409) and unverified (no email delivery yet; `""` removes it).
+Changing `mobile_number` also changes the sign-in number but needs no OTP (this endpoint is for backend/development use);
+same number = no-op, taken number = 409; audited as `MOBILE_CHANGED` / `EMAIL_CHANGED`. Not updatable here: user code,
+Aadhaar, account type, status. Not in the API yet because no source exists: UHID, dialysis vintage.
+
 ## 8. Backlog
 ### P0
 - Supply the Neon/Supabase `DATABASE_URL` and run the migrations against real PostgreSQL (SQLite is temporary).
 ### P1
+- Admin endpoints to approve/reject `PENDING_APPROVAL` accounts; restrict who may sign up as staff/doctor if
+  open registration is not acceptable in production.
+- Login lookup by `user_code` / email (OTP still sent to the stored mobile); reject unknown identifiers.
 - Phase 2 doctor experience in full: dialysis history, vitals, lab results, vascular access, timeline, richer
   patient detail and assignment management.
 - Cloud object storage (Azure Blob / S3) behind the existing `StorageBackend` interface — local disk is not durable.
@@ -121,7 +170,7 @@ collections are used by the mobile pipeline. A migration to unify them has NOT b
 - Push notifications (report processed, new insight, dialysis reminder) — architecture is prepared, not wired.
 ### P2
 - Unify the legacy web `documents`/`ocr_jobs` collections with `medical_documents`/`ocr_results` (needs approval).
-- Migrate the web app's mock `AppContext`/localStorage state onto the real API.
+- Migrate the remaining mock `AppContext` workspace state onto the real API (web login/session is real as of 2026-10-01).
 - Serve all `/mobile/*` paths from the Expo `index.html` in the dev preview so hard refreshes on in-app routes work.
 - LLM/RAG narrative summaries, predictive access-dysfunction models, angiogram image analysis.
 

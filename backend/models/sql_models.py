@@ -6,6 +6,7 @@ import uuid
 from datetime import datetime, timezone
 
 from sqlalchemy import (
+    Boolean,
     Date,
     DateTime,
     ForeignKey,
@@ -14,6 +15,7 @@ from sqlalchemy import (
     String,
     Text,
     UniqueConstraint,
+    false,
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -43,9 +45,22 @@ class User(Base):
     __tablename__ = "users"
 
     id: Mapped[uuid.UUID] = mapped_column(GUID, primary_key=True, default=_uuid)
+    # Human-facing login ID shown in the web UI, e.g. DUR-PT-00218, DOC-0071, OPR-1041, ADM-0001.
+    user_code: Mapped[str] = mapped_column(String(30), nullable=False, unique=True, index=True)
     mobile_number: Mapped[str] = mapped_column(String(15), nullable=False, unique=True, index=True)
-    user_type: Mapped[str] = mapped_column(String(20), nullable=False)  # PATIENT / DOCTOR
+    email: Mapped[str | None] = mapped_column(String(255), unique=True, index=True)  # stored lower-case
+    user_type: Mapped[str] = mapped_column(String(20), nullable=False)  # PATIENT / DOCTOR / OPERATOR / DIALYSIS_ADMIN / TECH_ADMIN
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="ACTIVE")
+    # Master details captured on the profile page.
+    blood_group: Mapped[str | None] = mapped_column(String(10))
+    emergency_contact: Mapped[str | None] = mapped_column(String(255))  # free text: name and number
+    known_allergies: Mapped[str | None] = mapped_column(Text)
+    occupation: Mapped[str | None] = mapped_column(String(150))
+    # DPDP consents; consents_updated_at is the time of the last change to any of them.
+    consent_data_sharing: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default=false())
+    consent_privacy_notice: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default=false())
+    consent_research: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default=false())
+    consents_updated_at: Mapped[datetime | None] = mapped_column(TS)
     created_at: Mapped[datetime] = mapped_column(TS, nullable=False, default=utcnow)
     updated_at: Mapped[datetime | None] = mapped_column(TS)
     last_login_at: Mapped[datetime | None] = mapped_column(TS)
@@ -74,6 +89,19 @@ class Doctor(Base):
     specialization: Mapped[str | None] = mapped_column(String(150))
     registration_number: Mapped[str | None] = mapped_column(String(100), unique=True)
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="ACTIVE")
+    created_at: Mapped[datetime] = mapped_column(TS, nullable=False, default=utcnow)
+    updated_at: Mapped[datetime | None] = mapped_column(TS)
+
+
+class StaffProfile(Base):
+    """Profile for non-clinical-record roles: OPERATOR, DIALYSIS_ADMIN, TECH_ADMIN."""
+    __tablename__ = "staff_profiles"
+
+    id: Mapped[uuid.UUID] = mapped_column(GUID, primary_key=True, default=_uuid)
+    user_id: Mapped[uuid.UUID] = mapped_column(GUID, ForeignKey("users.id"), nullable=False, unique=True)
+    name: Mapped[str] = mapped_column(String(150), nullable=False)
+    designation: Mapped[str | None] = mapped_column(String(150))
+    unit: Mapped[str | None] = mapped_column(String(150))
     created_at: Mapped[datetime] = mapped_column(TS, nullable=False, default=utcnow)
     updated_at: Mapped[datetime | None] = mapped_column(TS)
 

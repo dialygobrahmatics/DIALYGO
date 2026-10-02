@@ -104,6 +104,139 @@ class TestAuth:
 
 
 # ---------- Patient dashboard/profile ----------
+class TestSendOtpByUserCode:
+    def test_known_user_code_returns_masked_destinations(self):
+        r = requests.post(f"{API}/auth/send-otp", json={"user_code": "doc-0071"}, timeout=15)
+        assert r.status_code == 200, r.text
+        data = r.json()
+        assert data["mobileNumber"] == "XXXXXX0001" and data["email"].endswith("@example.com")
+        assert "***" in data["email"]
+
+    def test_unknown_user_code_is_404(self):
+        r = requests.post(f"{API}/auth/send-otp", json={"user_code": "NOPE-0000"}, timeout=15)
+        assert r.status_code == 404
+
+    def test_user_type_must_match_the_account(self):
+        ok = requests.post(f"{API}/auth/send-otp", json={"user_code": "DOC-0071", "user_type": "DOCTOR"}, timeout=15)
+        bad = requests.post(f"{API}/auth/send-otp", json={"user_code": "DOC-0071", "user_type": "PATIENT"}, timeout=15)
+        assert ok.status_code == 200 and bad.status_code == 404
+
+    def test_requires_exactly_one_identifier(self):
+        assert requests.post(f"{API}/auth/send-otp", json={}, timeout=15).status_code == 422
+        both = {"user_code": "DOC-0071", "mobile_number": DOCTOR_MOBILE}
+        assert requests.post(f"{API}/auth/send-otp", json=both, timeout=15).status_code == 422
+
+
+class TestProfileContactChange:
+    """Email and mobile number updates use fresh patients so the seeded account is never changed."""
+
+    @staticmethod
+    def _new_patient() -> dict:
+        mobile = _new_mobile()
+        otp = requests.post(f"{API}/auth/send-otp", json={"mobile_number": mobile}, timeout=15).json().get("devOtp") or FIXED_OTP
+        r = requests.post(f"{API}/auth/signup", timeout=15, json={
+            "user_type": "PATIENT", "name": "Contact Test", "mobile_number": mobile, "otp": otp,
+            "aadhaar_number": str(uuid.uuid4().int)[:12]})
+        assert r.status_code == 201, r.text
+        return {"mobile": mobile, "headers": _auth(r.json()["accessToken"]), "code": r.json()["userCode"]}
+
+    def test_email_update_clear_and_validation(self):
+        p = self._new_patient()
+        url = f"{API}/patient/profile"
+        r = requests.patch(url, headers=p["headers"], json={"email": " New.Mail@Example.com "}, timeout=10)
+        assert r.status_code == 200 and r.json()["account"]["email"] == "new.mail@example.com"
+        assert requests.patch(url, headers=p["headers"], json={"email": "not-an-email"}, timeout=10).status_code == 400
+        other = self._new_patient()
+        assert requests.patch(url, headers=other["headers"], json={"email": "NEW.mail@example.com"}, timeout=10).status_code == 409
+        cleared = requests.patch(url, headers=p["headers"], json={"email": ""}, timeout=10)
+        assert cleared.status_code == 200 and cleared.json()["account"]["email"] is None
+
+    def test_mobile_change_needs_no_otp_and_moves_sign_in(self):
+        p = self._new_patient()
+        url, new_mobile = f"{API}/patient/profile", _new_mobile()
+        r = requests.patch(url, headers=p["headers"], json={"mobile_number": new_mobile}, timeout=10)
+        assert r.status_code == 200, r.text
+        assert r.json()["account"]["mobileNumber"] == new_mobile
+        # sign-in by user code now targets the new number
+        sent = requests.post(f"{API}/auth/send-otp", json={"user_code": p["code"]}, timeout=15).json()
+        assert sent["mobileNumber"] == f"XXXXXX{new_mobile[-4:]}"
+
+    def test_mobile_change_rejects_taken_and_invalid_numbers(self):
+        p = self._new_patient()
+        url = f"{API}/patient/profile"
+        assert requests.patch(url, headers=p["headers"], json={"mobile_number": "12345"}, timeout=10).status_code == 400
+        assert requests.patch(url, headers=p["headers"], json={"mobile_number": PATIENT_MOBILE}, timeout=10).status_code == 409
+
+    def test_same_mobile_number_needs_no_otp(self):
+        p = self._new_patient()
+        r = requests.patch(f"{API}/patient/profile", headers=p["headers"], json={"mobile_number": p["mobile"]}, timeout=10)
+        assert r.status_code == 200
+
+
+class TestSignup:
+    def _otp(self, mobile):
+        r = requests.post(f"{API}/auth/send-otp", json={"mobile_number": mobile}, timeout=15)
+        assert r.status_code == 200
+        return r.json().get("devOtp") or FIXED_OTP
+
+    def _signup(self, body):
+        return requests.post(f"{API}/auth/signup", json=body, timeout=15)
+
+    def test_patient_signup_returns_token(self):
+        mobile = _new_mobile()
+        aadhaar = str(uuid.uuid4().int)[:12]
+        r = self._signup({"user_type": "PATIENT", "name": "Test Patient", "mobile_number": mobile,
+                          "otp": self._otp(mobile), "aadhaar_number": aadhaar})
+        assert r.status_code == 201, r.text
+        data = r.json()
+        assert data["status"] == "ACTIVE" and data["userCode"].startswith("DUR-PT-") and data["accessToken"]
+
+    def test_signup_stores_master_details_and_consents(self):
+        mobile = _new_mobile()
+        r = self._signup({"user_type": "PATIENT", "name": "Detail Patient", "mobile_number": mobile,
+                          "otp": self._otp(mobile), "aadhaar_number": str(uuid.uuid4().int)[:12],
+                          "blood_group": "ab+", "emergency_contact": "Kin - 90000 22222", "occupation": "Driver",
+                          "consent_data_sharing": True, "consent_privacy_notice": True})
+        assert r.status_code == 201, r.text
+        d = requests.get(f"{API}/patient/profile", headers=_auth(r.json()["accessToken"]), timeout=10).json()
+        assert d["details"] == {"bloodGroup": "AB+", "emergencyContact": "Kin - 90000 22222",
+                                "knownAllergies": None, "occupation": "Driver"}
+        assert d["consents"]["dataSharing"] and d["consents"]["privacyNotice"] and not d["consents"]["research"]
+        assert d["consents"]["updatedAt"]
+
+    def test_signup_rejects_invalid_blood_group_without_burning_the_otp(self):
+        mobile = _new_mobile()
+        otp = self._otp(mobile)
+        body = {"user_type": "OPERATOR", "name": "Bad Blood", "mobile_number": mobile, "otp": otp, "blood_group": "Z+"}
+        assert self._signup(body).status_code == 400
+        assert self._signup({**body, "blood_group": "O+"}).status_code == 201
+
+    def test_operator_signup_is_pending_and_cannot_sign_in(self):
+        mobile = _new_mobile()
+        r = self._signup({"user_type": "OPERATOR", "name": "Test Operator", "mobile_number": mobile,
+                          "otp": self._otp(mobile)})
+        assert r.status_code == 201, r.text
+        assert r.json()["status"] == "PENDING_APPROVAL" and "accessToken" not in r.json()
+        requests.post(f"{API}/auth/send-otp", json={"mobile_number": mobile}, timeout=15)
+        v = requests.post(f"{API}/auth/verify-otp", json={"mobile_number": mobile, "otp": FIXED_OTP}, timeout=15)
+        assert v.status_code == 403
+
+    def test_duplicate_mobile_conflicts(self):
+        r = self._signup({"user_type": "OPERATOR", "name": "Dup", "mobile_number": PATIENT_MOBILE,
+                          "otp": self._otp(PATIENT_MOBILE)})
+        assert r.status_code == 409
+
+    def test_wrong_otp_and_missing_fields_rejected(self):
+        mobile = _new_mobile()
+        self._otp(mobile)
+        assert self._signup({"user_type": "OPERATOR", "name": "Bad Otp", "mobile_number": mobile,
+                             "otp": "000000"}).status_code == 400
+        assert self._signup({"user_type": "DOCTOR", "name": "No Reg", "mobile_number": mobile,
+                             "otp": FIXED_OTP}).status_code == 400
+        assert self._signup({"user_type": "PATIENT", "name": "No Aadhaar", "mobile_number": mobile,
+                             "otp": FIXED_OTP}).status_code == 400
+
+
 class TestPatientAPI:
     def test_session(self, patient_token):
         r = requests.get(f"{API}/auth/session", headers=_auth(patient_token), timeout=10)
@@ -117,6 +250,46 @@ class TestPatientAPI:
         assert p["aadhaarMasked"].startswith("XXXX XXXX ")
         # Full aadhaar must never leak anywhere in payload
         assert SEEDED_AADHAAR not in r.text
+
+    def test_profile_returns_master_details_and_consents(self, patient_token):
+        d = requests.get(f"{API}/patient/profile", headers=_auth(patient_token), timeout=10).json()
+        assert d["account"]["userCode"] == "DUR-PT-00218"
+        assert d["account"]["mobileNumber"] == PATIENT_MOBILE and d["account"]["email"] == "ravi.kumar@example.com"
+        assert set(d["details"]) == {"bloodGroup", "emergencyContact", "knownAllergies", "occupation"}
+        assert set(d["consents"]) == {"dataSharing", "privacyNotice", "research", "updatedAt"}
+
+    def test_update_master_details_and_consents(self, patient_token):
+        url, headers = f"{API}/patient/profile", _auth(patient_token)
+        before = requests.get(url, headers=headers, timeout=10).json()
+        try:
+            r = requests.patch(url, headers=headers, timeout=10, json={
+                "blood_group": " o- ", "emergency_contact": "Test Person - 90000 11111",
+                "known_allergies": "", "occupation": "Engineer", "consent_research": True})
+            assert r.status_code == 200, r.text
+            d = r.json()
+            assert d["details"] == {"bloodGroup": "O-", "emergencyContact": "Test Person - 90000 11111",
+                                    "knownAllergies": None, "occupation": "Engineer"}
+            assert d["consents"]["research"] is True and d["consents"]["updatedAt"]
+            # omitted fields are untouched, and the change persists
+            again = requests.get(url, headers=headers, timeout=10).json()
+            assert again["consents"]["dataSharing"] == before["consents"]["dataSharing"]
+            assert again["details"]["occupation"] == "Engineer"
+        finally:
+            requests.patch(url, headers=headers, timeout=10, json={
+                "blood_group": before["details"]["bloodGroup"] or "",
+                "emergency_contact": before["details"]["emergencyContact"] or "",
+                "known_allergies": before["details"]["knownAllergies"] or "",
+                "occupation": before["details"]["occupation"] or "",
+                "consent_research": before["consents"]["research"]})
+
+    def test_update_rejects_invalid_values(self, patient_token):
+        url, headers = f"{API}/patient/profile", _auth(patient_token)
+        assert requests.patch(url, headers=headers, json={"blood_group": "Z+"}, timeout=10).status_code == 400
+        assert requests.patch(url, headers=headers, json={"occupation": "x" * 151}, timeout=10).status_code == 400
+        assert requests.patch(url, headers=headers, json={"consent_research": "maybe"}, timeout=10).status_code == 422
+
+    def test_doctor_cannot_use_patient_profile(self, doctor_token):
+        assert requests.get(f"{API}/patient/profile", headers=_auth(doctor_token), timeout=10).status_code == 403
 
     def test_dashboard(self, patient_token):
         r = requests.get(f"{API}/patient/dashboard", headers=_auth(patient_token), timeout=15)

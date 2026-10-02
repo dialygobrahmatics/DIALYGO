@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import UserWelcome from "@/components/UserWelcome";
 import { ArrowRight, CalendarClock, ClipboardCheck, Gauge, ListChecks, ShieldCheck, AlertTriangle, Activity, Upload, Loader2 } from "lucide-react";
 import { Panel, Metric, TrendBadge, ContextLine, Field } from "@/components/Bits";
 import { PatientBanner, PatientPickerList, NoPatient, usePatientContext } from "@/components/PatientBanner";
@@ -124,6 +125,7 @@ export function OperatorHome() {
       <div className="dg-card p-6">
         <p className="overline">Today · {new Date().toDateString()}</p>
         <h1 className="font-head text-3xl font-extrabold mt-1">Operator Console</h1>
+        <UserWelcome />
         <p className="text-sm text-slate-600 mt-3 max-w-3xl">
           Before every dialysis session, review the patient's consolidated historical dialysis, vascular-access and clinical
           evidence — so the current procedure is performed with context rather than isolated machine readings.

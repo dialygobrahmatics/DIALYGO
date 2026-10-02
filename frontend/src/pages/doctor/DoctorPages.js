@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import UserWelcome from "@/components/UserWelcome";
 import { useState } from "react";
 import { toast } from "sonner";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
@@ -26,6 +27,7 @@ export function DoctorHome() {
       <div className="dg-card p-6">
         <p className="overline">Clinical review · {new Date().toDateString()}</p>
         <h1 className="font-head text-3xl font-extrabold mt-1">Doctor Console</h1>
+        <UserWelcome />
         <p className="text-sm text-slate-600 mt-3 max-w-3xl">
           Compare each patient's evidence over time instead of reviewing sessions in isolation, then approve or return the
           core-engine prescription report.

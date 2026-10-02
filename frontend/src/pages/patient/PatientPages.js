@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { Upload, FileText, ShieldCheck, HeartPulse, Info, Lock, CheckCircle2, Fingerprint } from "lucide-react";
@@ -29,14 +30,15 @@ const Disclaimer = () => (
 
 export function PatientHome() {
   const { patient, insight } = usePatientSelf();
+  const { userDetails } = useAuth();
   const attention = insight.attention.filter((a) => a.severity !== "info").slice(0, 3);
   const last = patient.sessions[patient.sessions.length - 1];
   return (
     <div className="space-y-4">
       <div className="dg-card p-6">
         <p className="overline">Welcome back</p>
-        <h1 className="font-head text-3xl font-extrabold mt-1">{patient.name}</h1>
-        <p className="text-sm text-slate-600 mt-2">{patient.id} · {patient.schedule}</p>
+        <h1 className="font-head text-3xl font-extrabold mt-1" data-testid="user-welcome-name">{userDetails?.name}</h1>
+        <p className="text-sm text-slate-600 mt-2"><span className="metric-num" data-testid="user-welcome-code">{userDetails?.id}</span> · {patient.schedule}</p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5">
           <div className="dg-stat px-4 py-3"><p className="overline">Sessions completed</p><p className="metric-num text-2xl font-semibold mt-1">{patient.sessions.length}</p></div>
           <div className="dg-stat px-4 py-3"><p className="overline">Last session</p><p className="metric-num text-sm font-semibold mt-1">{last.date}</p></div>
@@ -299,80 +301,6 @@ export function PatientMedicalHistory() {
           ))}
         </ul>
         <Disclaimer />
-      </Panel>
-    </div>
-  );
-}
-
-export function PatientProfile() {
-  const { patient } = usePatientSelf();
-  const [otpSent, setOtpSent] = useState(false);
-  const [otp, setOtp] = useState("");
-  const [verified, setVerified] = useState(true);
-  const [consents, setConsents] = useState({ share: true, privacy: true, research: false });
-  const [missing, setMissing] = useState({ emergencyContact: "", allergies: "", occupation: "" });
-
-  return (
-    <div className="space-y-4">
-      <Panel title="Profile & KYC" hint="Demographics and clinical identity captured in Phase-I" testId="patient-profile-panel">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Metric label="Name" value={patient.name} />
-          <Metric label="Age" value={patient.age} unit="years" />
-          <Metric label="Gender" value={patient.gender} />
-          <Metric label="Blood group" value={patient.bloodGroup} />
-          <Metric label="DialyGo ID" value={patient.id} />
-          <Metric label="UHID" value={patient.uhid} />
-          <Metric label="Mobile" value={patient.phone} />
-          <Metric label="Dialysis vintage" value={patient.dialysisVintageMonths} unit="months" />
-        </div>
-      </Panel>
-
-      <Panel title="Mock OTP authentication" hint="Demonstration only — no message is sent" testId="patient-otp-panel">
-        <div className="flex flex-wrap items-end gap-3">
-          <Field label="Registered mobile"><Input data-testid="otp-phone-input" defaultValue={patient.phone} className="metric-num w-56" /></Field>
-          <Button data-testid="send-otp-btn" variant="outline" onClick={() => { setOtpSent(true); setVerified(false); toast.info("Mock OTP 123456 generated"); }}>Send OTP</Button>
-          {otpSent && (
-            <>
-              <Field label="Enter OTP"><Input data-testid="otp-input" value={otp} onChange={(e) => setOtp(e.target.value)} placeholder="123456" className="metric-num w-32" /></Field>
-              <Button data-testid="verify-otp-btn" className="bg-navy hover:bg-navy-deep" onClick={() => { if (otp.trim() === "123456") { setVerified(true); toast.success("Mobile verified (mock)"); } else toast.error("Invalid mock OTP — use 123456"); }}>Verify</Button>
-            </>
-          )}
-          {verified && <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded px-2 py-1" data-testid="otp-verified-badge"><CheckCircle2 className="h-3.5 w-3.5" /> Verified</span>}
-        </div>
-        <div className="mt-5 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4">
-          <p className="text-sm font-semibold flex items-center gap-2"><Fingerprint className="h-4 w-4 text-slate-500" /> Biometric, fingerprint and face-recognition login</p>
-          <p className="text-xs text-slate-600 mt-1">Future Release – Not Available in Phase I.</p>
-        </div>
-      </Panel>
-
-      <Panel title="Consent for data sharing" hint="DPDP Act 2023 — explicit, revocable consent" testId="patient-consent-panel">
-        <div className="space-y-3">
-          {[
-            { key: "share", text: "I consent to sharing my personal, medical and clinical data with DialyGo and my treating facility for the purpose of dialysis care delivery." },
-            { key: "privacy", text: "I have read and accept the privacy notice and prototype disclaimer: this application provides decision support only and does not replace clinical judgement." },
-            { key: "research", text: "Optional: I consent to the use of my de-identified data for service improvement." },
-          ].map((c) => (
-            <label key={c.key} className="flex items-start gap-3 rounded-lg border border-slate-200 p-3 cursor-pointer hover:border-slate-300 transition-colors">
-              <Checkbox data-testid={`consent-${c.key}`} checked={consents[c.key]} onCheckedChange={(v) => setConsents((p) => ({ ...p, [c.key]: !!v }))} />
-              <span className="text-sm text-slate-700">{c.text}</span>
-            </label>
-          ))}
-        </div>
-        <Button data-testid="save-consent-btn" className="mt-4 bg-navy hover:bg-navy-deep" onClick={() => toast.success("Consent preferences saved")}>
-          <ShieldCheck className="h-4 w-4 mr-1.5" /> Save consent preferences
-        </Button>
-        <p className="text-xs text-slate-500 mt-3 flex items-start gap-1.5">
-          <Info className="h-3.5 w-3.5 mt-0.5" /> Automatic hospital data integration is a future release; in Phase-I your information is entered or uploaded manually.
-        </p>
-      </Panel>
-
-      <Panel title="Complete missing information" hint="Fields not yet captured on your record" testId="patient-missing-panel">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Field label="Emergency contact"><Input data-testid="missing-emergency-input" value={missing.emergencyContact} onChange={(e) => setMissing({ ...missing, emergencyContact: e.target.value })} placeholder="Name and number" /></Field>
-          <Field label="Known allergies"><Input data-testid="missing-allergies-input" value={missing.allergies} onChange={(e) => setMissing({ ...missing, allergies: e.target.value })} placeholder="None / drug names" /></Field>
-          <Field label="Occupation"><Input data-testid="missing-occupation-input" value={missing.occupation} onChange={(e) => setMissing({ ...missing, occupation: e.target.value })} placeholder="Optional" /></Field>
-        </div>
-        <Button data-testid="save-missing-btn" variant="outline" className="mt-4" onClick={() => toast.success("Missing information saved to your record (mock)")}>Save information</Button>
       </Panel>
     </div>
   );
