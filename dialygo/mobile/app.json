@@ -1,0 +1,49 @@
+{
+  "expo": {
+    "name": "Dialygo",
+    "slug": "dialygo",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "dialygo",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0A3D62"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "in.dialygo.mobile"
+    },
+    "android": {
+      "package": "in.dialygo.mobile",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0A3D62"
+      },
+      "edgeToEdgeEnabled": true
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Dialygo uses the camera so you can photograph your medical reports.",
+          "photosPermission": "Dialygo needs access to your photos so you can upload medical reports."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "baseUrl": "/mobile"
+    }
+  }
+}

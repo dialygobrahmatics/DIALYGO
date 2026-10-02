@@ -1,0 +1,38 @@
+{
+  "summary": "Frontend-only regression of the new role-based Dialyso Phase-I shell. Executed a comprehensive Playwright run covering login (4 roles, DPDP consent gating, invalid ID, patient OTP), shell chrome (sidebar collapse, home icon, breadcrumbs, notifications, topbar search), role isolation and role switching, operator pre-session workflow (12-step strip + 7 checklist + 3 nav buttons), core engine 8-step run with Prototype Analysis / Decision Support Only / Requires Qualified Clinical Review labels + goto-report, machine-insights gating locked vs approved (verified via SPA navigation), doctor clinical review status transitions Pending -> Returned -> Approved with context propagation, prescription report 6 sections + 5 risk flags + sign-off, patient upload + profile OTP verify, all 11 admin modules load + users search, roadmap page, mobile 390x844 responsiveness. 26 of 27 checks pass functionally; the one initial failure of the operator machine-insights-after-approval assertion was a test-side artefact of page.goto() reloading (which resets in-memory context, as spec allows) and was re-verified GREEN with SPA link navigation.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {"flow": "Topbar patient search", "issue": "Search results popover does not auto-open when the user focuses/types in [data-testid=topbar-search-input]; it only opens after an explicit click on the trigger. Typing then requires the user to click the field first. Minor UX nit — functionally works once opened.", "affected_selectors": ["[data-testid=topbar-search-input]", "[data-testid=topbar-search-results]"]}
+    ],
+    "design_issues": [
+      {"screen": "Global (all pages)", "issues": ["Footer disclaimer text contains the literal tokens 'genomic' and 'DNA-based' (negation: 'No genomic or DNA-based personalisation is captured or used'). The spec asks that 'no screen anywhere contains DNA/genomic' — strict interpretation. Recommend rewording e.g. 'No hereditary/gene-level personalisation is captured or used'."]},
+      {"screen": "/roadmap", "issues": ["Roadmap intro also mentions 'Genomic or DNA-based personalisation is out of scope' — same wording issue as above; strictly the words appear on the screen."]},
+      {"screen": "Radix Dialog usage (patient upload/other dialogs)", "issues": ["Console warnings: DialogContent missing DialogTitle/aria-describedby (accessibility). Non-blocking but should be addressed with VisuallyHidden titles."]},
+      {"screen": "Doctor Dialysis History charts", "issues": ["Recharts console warnings 'width(-1) and height(-1) of chart should be greater than 0' on initial mount — likely a ResponsiveContainer sizing issue when the panel is briefly hidden; charts still render after layout settles."]}
+    ]
+  },
+  "test_report_links": ["/app/test_reports/iteration_2.json"],
+  "action_items": [
+    "Rework compliance wording in AppLayout.js footer and Roadmap.js to remove the literal words 'DNA' and 'genomic' (even in negation) per the strict Phase-I compliance requirement.",
+    "Add a VisuallyHidden DialogTitle inside sheet/dialog contents to silence Radix a11y warnings.",
+    "Optional UX: make the topbar search Popover open on focus/typing (openOnFocus) so results appear without an explicit trigger click.",
+    "Optional UX: guard Recharts ResponsiveContainer with a minHeight to avoid the 'width(-1) height(-1)' warnings on Doctor Dialysis History."
+  ],
+  "critical_code_review_comments": [
+    "State (drafts, engineRuns, uploads, whatsappLog) is in-memory only — expected per spec; make this behaviour visible in-app so users are not surprised by a page reload wiping sign-off (currently no toast/banner).",
+    "AppContext useMemo dependencies omit the login/switchRole/logout/updateDraft/etc. handlers (they are recreated every render), which invalidates the memo every render. Minor perf, but the eslint-disable is masking it. Consider useCallback wrappers.",
+    "AppLayout.js is ~260 lines and doing brand, sidebar, topbar, popovers, search — split into Sidebar/Topbar/SearchPopover modules for maintainability.",
+    "Login.js: after switching between roles the local state 'otpStage' is reset but 'otp' input value is not cleared — minor.",
+    "Roadmap.js contains 'Genomic or DNA-based personalisation is out of scope' — reword to avoid banned tokens entirely."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A (no backend by design)", "frontend": "~96% (26/27 functional checks pass; 1 UX-nit, 1 wording finding)"},
+  "test_credentials": "Used /app/memory/test_credentials.md — OPR-1041, OPR-9999 (negative), DOC-0071, DUR-PT-00218 (OTP 123456), ADM-0001. DPDP consent ticked.",
+  "seed_data_creation": "None — pure mock JSON.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "The Phase-I role-based shell is functionally solid. Only two things to re-check after E1 fixes: (1) the compliance-wording clean-up on footer + roadmap (grep for DNA / genomic should return 0 hits in src/), and (2) topbar search auto-open on typing. Also note: page.goto() in Playwright reloads the SPA and wipes in-memory context (drafts, sign-off, uploads, engine runs) — this is by design; always use in-app nav (sidebar / profile menu) to test cross-role state propagation.",
+  "rca of the issue": "Compliance-wording finding: Roadmap.js line 18 and AppLayout.js footer line 254 both include the literal tokens 'DNA' and 'genomic' inside a negation clause. Even though the intent is to disclaim, the review-request wording (‘no screen anywhere contains DNA/genomic’) is strict. Reproduction: navigate to any authenticated page and inspect the footer text, or open /roadmap. Mitigation: replace with neutral phrasing such as ‘No hereditary or gene-level personalisation is used’. Topbar-search UX: Radix Popover only opens on trigger click. Reproduction: focus [data-testid=topbar-search-input] and type — no results panel appears until the input is clicked first. Mitigation: convert to a Command/Combobox pattern or manage `open` state via `onFocus` in AppLayout."
+}

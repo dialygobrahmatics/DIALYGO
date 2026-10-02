@@ -1,0 +1,62 @@
+{
+  "summary": "Frontend-only DURISE Phase-1 end-to-end tested via Playwright against public preview URL. All 18 requested behaviours verified across login gating, DPDP consent validation, roster search, patient dashboard, vascular tab timeline, history sub-tabs, telemetry stream, session stage inputs & context, prescription report engine, sign-off gating, WhatsApp mock dispatch log, engine differentiation across 3 patients, and mobile responsiveness at 390x844. Every requested data-testid resolves and behaves as specified. Two non-blocking React console issues detected (see minor issues).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "code_issues_found": [
+    {
+      "component": "SessionTab.js TelemetryPanel",
+      "issue": "React warning in console: 'Cannot update a component (AppProvider) while rendering a different component (TelemetryPanel)'. Some state setter (likely updateDraft or setStage) is being called during render instead of inside useEffect / event handler.",
+      "priority": "MEDIUM",
+      "impact": "Does not break functionality, but is a React anti-pattern that can cause unexpected re-renders and future StrictMode errors."
+    },
+    {
+      "component": "Recharts containers (OverviewTab, VascularTab charts)",
+      "issue": "Repeated console warnings 'The width(-1) and height(-1) of chart should be greater than 0'. ResponsiveContainer receives a parent with 0 width on first render (likely inside a Tabs panel that is display:none until active, or missing minWidth: 0 / explicit height).",
+      "priority": "LOW",
+      "impact": "Charts still render eventually, but produces console spam and a brief flash of empty chart area."
+    }
+  ],
+  "verified_behaviours": [
+    "T1 login page at /",
+    "T2 invalid OPR-9999 -> 'Operator ID not recognised in this unit.'",
+    "T3 valid OPR-1041 without DPDP -> 'DPDP Act consent acknowledgement is required.'",
+    "T4 successful login -> /patients, 3 patient cards, operator name 'S. Kulkarni' shown in header",
+    "T5 logout then direct nav to /patients and /patient/DUR-PT-00218 both redirect to login (route protection)",
+    "T6 search 'Fatima' filters to 1 card; 'DUR-PT-00477' returns Joseph D'Souza",
+    "T7 patient DUR-PT-00218 header shows name, DURISE ID, UHID, dry weight, comorbidity chips, access risk HIGH, 5 high attention count",
+    "T8 Overview: 10 attention items rendered incl. Access flow below threshold, Rising venous pressure, hyperkalaemia etc.; recent sessions table + charts present",
+    "T9 open-vascular-tab-btn and open-history-tab-btn switch main tabs correctly",
+    "T10 Vascular tab timeline shows 8 dated events (most-recent first) plus access flow & cannulation charts with 600 mL/min reference",
+    "T11 All 6 history sub-tabs (sessions, labs, meds, admissions, docs, notes) render content",
+    "T12 Telemetry toggle starts stream, tele-qb/tele-vp values change (e.g. 280 -> 272), button flips to 'Pause stream', clicking again pauses",
+    "T13 Stage tabs switch; pre-weight 70 shows 'Previous 10-session range' context; blood flow 200 in During stage shows 'below range'; both prescription-verified and meds-confirmed checkboxes toggle",
+    "T14 Report tab: tuning-block with 5 metrics + rationale, access-status-block, vascular-trend-block, 5 risk-flag-* items, plan-now, plan-next all render",
+    "T14b WhatsApp send blocked before sign-off (log stays empty)",
+    "T14d Sign-off with clinician name shows 'Reviewed and approved for application'",
+    "T14e After sign-off: sending message and PDF appends 2 entries to whatsapp-log with phone +91 98200 41127 and attachment DURISE_Session_128_DUR-PT-00218.pdf",
+    "T15 Engine differentiation confirmed: Fatima (AV Graft, flow 1120) -> 'Objective achieved', vascular trend stable; Joseph (Tunnelled Catheter, flow 260) -> 'Objective at risk', trend rising -> different report text",
+    "T16 Mobile 390x844: no horizontal overflow on login/roster/dashboard; tab list wraps"
+  ],
+  "test_report_links": [],
+  "action_items": [
+    "Fix TelemetryPanel setState-in-render warning (move any updateDraft/setStage call out of render into useEffect or event handler).",
+    "Give Recharts ResponsiveContainer explicit height (e.g. h-64) or minWidth:0 on flex parent to remove width/height -1 warnings and initial flash."
+  ],
+  "critical_code_review_comments": [
+    "TelemetryPanel violates React 'no setState during render' rule - see console error.",
+    "Chart containers inside Tabs panels lose measured size on first paint; wrap in a div with fixed height instead of relying on aspect ratio.",
+    "Sign-off empty-clinician branch relies on a toast (sonner) rather than an inline error - verified indirectly (no signoff-status appeared), but consider mirroring the login-error inline pattern for consistency."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A (no backend by design)", "frontend": "100% (18/18 verified)"},
+  "test_credentials": "OPR-1041 (S. Kulkarni), OPR-2276, OPR-3390 - no password, DPDP consent required. From /app/memory/test_credentials.md",
+  "seed_data_creation": "None - all data from /app/frontend/src/data/mockData.js",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Frontend-only build; use public URL https://vascular-access-ai.preview.emergentagent.com; login via [data-testid=demo-operator-OPR-1041] + [data-testid=dpdp-consent-checkbox] + [data-testid=login-submit-btn]. All flows work. Only outstanding items are the TelemetryPanel React warning and Recharts container size warnings.",
+  "rca of the issue": "N/A - no functional bugs found. React warning RCA: TelemetryPanel likely invokes AppContext's updateDraft or setStage inside render body (or inside a memoized value) instead of an effect/handler."
+}
